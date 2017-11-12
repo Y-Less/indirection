@@ -1,0 +1,2 @@
+# indirection
+PAWN function pointers.
