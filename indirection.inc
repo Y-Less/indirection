@@ -13,6 +13,16 @@
 	#define AMX_INCLUDING_FAILED
 #endif
 
+#tryinclude "..\amx\addressof_jit"
+#tryinclude <amx_assembly\addressof_jit>
+#tryinclude "..\amx_assembly\addressof_jit"
+#tryinclude "..\..\amx_assembly\addressof_jit"
+#tryinclude "addressof_jit"
+#tryinclude <addressof_jit>
+#if !defined ADDRESSOF_JIT_INC
+	#define AMX_INCLUDING_FAILED
+#endif
+
 #tryinclude "..\amx\amx_header"
 #tryinclude <amx_assembly\amx_header>
 #tryinclude "..\amx_assembly\amx_header"
@@ -25,7 +35,7 @@
 
 #if defined AMX_INCLUDING_FAILED
 	#error Could not include "https://github.com/Zeex/amx_assembly" - ensure its files are in "include\amx_assembly\"
-#elseif !defined GetOpcodeInstructionInformation
+#elseif !defined AddressofResolve
 	#error Please update "https://github.com/Zeex/amx_assembly" to the latest version.
 #endif
 
@@ -359,6 +369,7 @@ stock void:Indirect_Callvoid(func, tag, GLOBAL_TAG_TYPES:...)
 
 public OnJITCompile()
 {
+	AddressofResolve();
 	new
 		amxhdr[AMX_HDR];
 	GetAmxHeader(amxhdr);
@@ -372,6 +383,7 @@ public OnJITCompile()
 
 public OnFilterScriptInit()
 {
+	AddressofResolve();
 	new
 		amxhdr[AMX_HDR];
 	GetAmxHeader(amxhdr);
@@ -384,6 +396,7 @@ public OnFilterScriptInit()
 
 public OnGameModeInit()
 {
+	AddressofResolve();
 	new
 		amxhdr[AMX_HDR];
 	GetAmxHeader(amxhdr);
