@@ -1,3 +1,7 @@
+#if defined _INC_indirection
+	#endinput
+#endif
+#define _INC_indirection
 
 #tryinclude "..\amx\addressof"
 #tryinclude <amx_assembly\addressof>
