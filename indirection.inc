@@ -47,7 +47,7 @@ static stock
 	gsCodSize; // The size of `COD`.
 
 #if !defined YSI_MAX_STRING
-	#define YSI_MAX_STRING 144
+	#define YSI_MAX_STRING (144)
 #endif
 
 #define string:
@@ -56,24 +56,47 @@ static stock
 #if !defined TAGOF
 	#if ((__Pawn & 0x0F) >= 0x0A) || ((__Pawn & 0xF0) >= 0xA0)
 		#define TAGOF(%0);
+		// Defer `tagof` on things with colons slightly to remove anything after
+		// it.  This lets us do `tagof (Float:i)` with no problem, since the `i`
+		// is removed.
+		#define TAGOF@[%0] %0:
+		#define tagof(%0:%1) tagof(TAGOF@[%0])
 	#else
 		#define TAGOF(%0); stock const %0:TAGOF@%0;
 		#define TAGOF@%0\32; TAGOF@
 		#define tagof(%0:%1) (tagof(TAGOF@%0))
 	#endif
-	#define TAGOF@TAG@%0\32; TAGOF@TAG@
-	#define SPECIFIER(%0) TAGOF(TAG@%0)
+	#define TAGOF@F@_@%0\32; TAGOF@F@_@
+	#define SPECIFIER(%0) TAGOF(F@_@%0)
 	
 	TAGOF(Float);
 	TAGOF(File);
 #endif
-#define TAG@%0\32; TAG@
+
+// Technically the function tags are not always `F@_@`.  The third character can
+// be anything, and is reserved for representing the return type.  However, it
+// is currently not used.  DO NOT consume spaces after `F@_@` since this will
+// break functions with no parameters since their tag is just `F@_@:` (or
+// `F@_@_`).  Function tags could be weak, which means if you pass a pointer to
+// a function that wants a different type, or pass an untyped pointer to a
+// function that wants any type, you will get a mismatch warning.  However, you
+// can pass a typed pointer to a function that doesn't expect any type for
+// backwards-compatability reasons.  I decided against this though - make them
+// strong and give warnings on all old code!
+#define callback: F@_@:
+#define funcptr<%0>: F@_@%0:
+
+// Examples of predeclarations of specifier types.  These fix a bug in the old
+// compiler where you can't (always) do `tagof (Float:)`.  This is relevant here
+// since the specifiers are passed as `F@_@i:Func`, so we need `tagof (F@_@i:)`
+// to get at the specifier.  However, since that doesn't work, we instead need
+// `tagof (TAGOF@F@_@i)` with `stock const F@_@i:TAGOF@F@_@i`.  I.e. we need a
+// variable using the tag to get the tag from, instead of getting it directly.
+SPECIFIER(i);
+SPECIFIER(s);
 
 // This is for getting excess parameters on non-strings.
 #define _:%0,) _:%0)
-
-SPECIFIER(i);
-SPECIFIER(s);
 
 // I did consider an alternate method of making `@` do this:
 //   
@@ -88,7 +111,7 @@ SPECIFIER(s);
 #define @%0(%1) (Indirect_Call(_:INDIRECT_DOT:%0,_:(tagof(%0)),%1))
 #define Indirect_Call(_:INDIRECT_DOT:%9&%0,_:(tagof(%9)),%2) Indirect_Call(_:TAGOF_ADDRESSOF:addressof(%0),_:0,%2)
 #define INDIRECT_DOT:.%0,_:(tagof(.%0)) %0,_:(tagof(%0))
-#define TAGOF_ADDRESSOF:addressof(%0<%2>),_:0, addressof(%0),_:tagof(TAG@%2:),
+#define TAGOF_ADDRESSOF:addressof(%0<%2>),_:0, addressof(%0),_:tagof(F@_@%2:),
 // Can now do:
 //   
 //   @.var(params)
@@ -150,7 +173,7 @@ stock Indirect_Call(func, tag, GLOBAL_TAG_TYPES:...)
 			i,
 			lTag[32];
 		GetTagNameFromID(INDIRECTION_TAG, lTag);
-		i = 4; // Skip the `TAG@` prefix.
+		i = 4; // Skip the `F@_@` prefix.
 		for ( ; ; )
 		{
 			switch (lTag[i++])
@@ -236,7 +259,7 @@ stock string:Indirect_Callstring(func, tag, GLOBAL_TAG_TYPES:...)
 			i,
 			lTag[32];
 		GetTagNameFromID(INDIRECTION_TAG, lTag);
-		i = 4; // Skip the `TAG@` prefix.
+		i = 4; // Skip the `F@_@` prefix.
 		for ( ; ; )
 		{
 			switch (lTag[i++])
@@ -248,7 +271,7 @@ stock string:Indirect_Callstring(func, tag, GLOBAL_TAG_TYPES:...)
 				#emit LOAD.I
 				#emit SREF.pri   addr
 			}
-			case '\0':
+			case '\0', '_':
 				break;
 			}
 			addr += 4;
@@ -326,7 +349,7 @@ stock void:Indirect_Callvoid(func, tag, GLOBAL_TAG_TYPES:...)
 			i,
 			lTag[32];
 		GetTagNameFromID(INDIRECTION_TAG, lTag);
-		i = 4; // Skip the `TAG@` prefix.
+		i = 4; // Skip the `F@_@` prefix.
 		for ( ; ; )
 		{
 			switch (lTag[i++])
