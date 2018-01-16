@@ -124,19 +124,11 @@ stock Indirect_Call(func, tag, GLOBAL_TAG_TYPES:...)
 	static
 		addr;
 	#pragma unused func, tag
-	// Read the memory at `handler`.  If it is `OP_PROC`, this is just a normal
-	// function not a special handler function.  If so, translate the parameters
-	// in to the correct forms from the tag and jump to `handler + cellbytes`.
-	// If it isn't `OP_PROC` (don't ask me what happens with state functions),
-	// Copy the data and then jump straight to it.
+	// The COD and DAT segments are different, so `func` pointing in to DAT
+	// relative to COD will not be a valid pointer, and THAT you can detect!
 	// 
-	// If I make `func` a reference, I think I can trick vars and arrays in to
-	// behaving similarly.  No, that will easilly loose its referenceness if
-	// people pass it as a regular parameter.  BUT - the COD and DAT segments
-	// are different.  So something pointing in to DAT relative to COD will not
-	// be a valid pointer, and THAT you can detect!
 	// Get the previous frame.  This undoes the effects of our `PROC` so the
-	// called function will have a proper `PROC`.
+	// called function must have a proper `PROC`.
 	#emit ADDR.pri     20
 	#emit STOR.pri     addr
 	#emit POP.pri
@@ -210,19 +202,6 @@ stock string:Indirect_Callstring(func, tag, GLOBAL_TAG_TYPES:...)
 	static
 		addr;
 	#pragma unused func, tag
-	// Read the memory at `handler`.  If it is `OP_PROC`, this is just a normal
-	// function not a special handler function.  If so, translate the parameters
-	// in to the correct forms from the tag and jump to `handler + cellbytes`.
-	// If it isn't `OP_PROC` (don't ask me what happens with state functions),
-	// Copy the data and then jump straight to it.
-	// 
-	// If I make `func` a reference, I think I can trick vars and arrays in to
-	// behaving similarly.  No, that will easilly loose its referenceness if
-	// people pass it as a regular parameter.  BUT - the COD and DAT segments
-	// are different.  So something pointing in to DAT relative to COD will not
-	// be a valid pointer, and THAT you can detect!
-	// Get the previous frame.  This undoes the effects of our `PROC` so the
-	// called function will have a proper `PROC`.
 	#emit ADDR.pri     20
 	#emit STOR.pri     addr
 	#emit POP.pri
@@ -300,19 +279,6 @@ stock void:Indirect_Callvoid(func, tag, GLOBAL_TAG_TYPES:...)
 	static
 		addr;
 	#pragma unused func, tag
-	// Read the memory at `handler`.  If it is `OP_PROC`, this is just a normal
-	// function not a special handler function.  If so, translate the parameters
-	// in to the correct forms from the tag and jump to `handler + cellbytes`.
-	// If it isn't `OP_PROC` (don't ask me what happens with state functions),
-	// Copy the data and then jump straight to it.
-	// 
-	// If I make `func` a reference, I think I can trick vars and arrays in to
-	// behaving similarly.  No, that will easilly loose its referenceness if
-	// people pass it as a regular parameter.  BUT - the COD and DAT segments
-	// are different.  So something pointing in to DAT relative to COD will not
-	// be a valid pointer, and THAT you can detect!
-	// Get the previous frame.  This undoes the effects of our `PROC` so the
-	// called function will have a proper `PROC`.
 	#emit ADDR.pri     20
 	#emit STOR.pri     addr
 	#emit POP.pri
