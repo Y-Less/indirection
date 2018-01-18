@@ -84,7 +84,8 @@ static stock
 // backwards-compatability reasons.  I decided against this though - make them
 // strong and give warnings on all old code!
 #define callback: F@_@:
-#define funcptr<%0>: F@_@%0:
+//#define funcptr<%0>: F@_@%0:
+#define Func:%0<%1> F@_@%0:%1
 
 // Examples of predeclarations of specifier types.  These fix a bug in the old
 // compiler where you can't (always) do `tagof (Float:)`.  This is relevant here
