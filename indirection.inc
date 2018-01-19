@@ -207,7 +207,7 @@ stock Indirect_Call(func, tag, GLOBAL_TAG_TYPES:...)
 				#emit LOAD.I
 				#emit SREF.pri   addr
 			}
-			case '\0':
+			case '\0', 'x':
 				break;
 			}
 			addr += 4;
@@ -302,7 +302,7 @@ stock string:Indirect_Callstring(func, tag, GLOBAL_TAG_TYPES:...)
 				#emit LOAD.I
 				#emit SREF.pri   addr
 			}
-			case '\0', '_':
+			case '\0', 'x':
 				break;
 			}
 			addr += 4;
@@ -401,7 +401,7 @@ stock void:Indirect_Callvoid(func, tag, GLOBAL_TAG_TYPES:...)
 				#emit LOAD.I
 				#emit SREF.pri   addr
 			}
-			case '\0':
+			case '\0', 'x':
 				break;
 			}
 			addr += 4;
