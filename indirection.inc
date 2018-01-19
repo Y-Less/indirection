@@ -200,7 +200,7 @@ stock Indirect_Call(func, tag, GLOBAL_TAG_TYPES:...)
 		{
 			switch (lTag[i++])
 			{
-			case 'i', 'd', 'x', 'f', 'c':
+			case 'i', 'd', 't', 'f', 'c':
 			{
 				// Resolve non-reference parameters.
 				#emit LREF.pri   addr
@@ -295,7 +295,7 @@ stock string:Indirect_Callstring(func, tag, GLOBAL_TAG_TYPES:...)
 		{
 			switch (lTag[i++])
 			{
-			case 'i', 'd', 'x', 'f', 'c':
+			case 'i', 'd', 't', 'f', 'c':
 			{
 				// Resolve non-reference parameters.
 				#emit LREF.pri   addr
@@ -394,7 +394,7 @@ stock void:Indirect_Callvoid(func, tag, GLOBAL_TAG_TYPES:...)
 		{
 			switch (lTag[i++])
 			{
-			case 'i', 'd', 'x', 'f', 'c':
+			case 'i', 'd', 't', 'f', 'c':
 			{
 				// Resolve non-reference parameters.
 				#emit LREF.pri   addr
