@@ -12,6 +12,9 @@
 #if !defined ADDRESSOF_INC
 	#define AMX_INCLUDING_FAILED
 #endif
+#if !defined _ADDR@
+	#define AMX_INCLUDING_FAILED
+#endif
 
 #tryinclude "..\amx\addressof_jit"
 #tryinclude <amx_assembly\addressof_jit>
@@ -38,6 +41,14 @@
 #elseif !defined AddressofResolve
 	#error Please update "https://github.com/Zeex/amx_assembly" to the latest version.
 #endif
+
+enum E_INDIRECTION
+{
+	E_INDIRECTION_ALWAYS_NULL, // So we can tell this is not a string.
+	E_INDIRECTION_HANDER,      // Called by `@` to handle this pointer.
+	E_INDIRECTION_CLAIM,       // Called by `Indirect_Claim`.
+	E_INDIRECTION_RELEASE,     // Called by `Indirect_Release`.
+}
 
 stock
 	INDIRECTION_DATA,
@@ -497,6 +508,15 @@ stock Indirect_Release_(func)
 	}
 }
 #define Indirect_Release(%0) Indirect_Release_(_:%0)
+
+stock Indirect_Tag(id, dest[32])
+{
+	static
+		lTag[32];
+	GetTagNameFromID(id, lTag);
+	dest[0] = '\0',
+	strcat(dest, lTag[4]);
+}
 
 #if !defined _ALS_OnJITCompile
 	forward OnJITCompile();
