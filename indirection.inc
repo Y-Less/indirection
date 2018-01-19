@@ -84,8 +84,7 @@ static stock
 // backwards-compatability reasons.  I decided against this though - make them
 // strong and give warnings on all old code!
 #define callback: F@_@:
-//#define funcptr<%0>: F@_@%0:
-#define Func:%0<%1> F@_@%0:%1
+#define Func:%0<%1> F@_@%1:%0
 
 // Examples of predeclarations of specifier types.  These fix a bug in the old
 // compiler where you can't (always) do `tagof (Float:)`.  This is relevant here
@@ -120,6 +119,8 @@ SPECIFIER(s);
 //   @.&func(params)
 //   
 
+native Indirect_CallLocalFunctionByPtr(const function, const format[], GLOBAL_TAG_TYPES:...) = CallLocalFunction;
+
 stock Indirect_Call(func, tag, GLOBAL_TAG_TYPES:...)
 {
 	static
@@ -151,16 +152,44 @@ stock Indirect_Call(func, tag, GLOBAL_TAG_TYPES:...)
 	// Check the pointer type.  If it is in the `COD` area, jump straight to it
 	// with the tag for parameter types (if it isn't 0).  Otherwise, use the
 	// `func` from `DAT` as a pointer to a handler.
-	if (INDIRECTION_DATA > gsCodSize)
+	if (INDIRECTION_DATA >= gsCodSize)
 	{
+		// Get the data at `func - COD`.
 		#emit LOAD.pri     INDIRECTION_DATA
 		#emit LOAD.alt     gsCodSize
 		#emit SUB
-		#emit STOR.pri     INDIRECTION_DATA
+		#emit MOVE.alt
 		#emit LOAD.I
-		#emit SCTRL        6
+		#emit STOR.pri     INDIRECTION_DATA
+		if (!INDIRECTION_DATA)
+		{
+			// Get the function at `func - COD + 4`.
+			#emit CONST.pri    4
+			#emit ADD
+			#emit LOAD.I
+			// Call it, passing `func` as a proper pointer, NOT skipping `PROC`.
+			#emit STOR.alt     INDIRECTION_DATA
+			#emit SCTRL        6
+			// NEVER RETURNS PAST HERE.
+		}
+		{}
+		// `INDIRECTION_DATA` is now a pointer to a string of a function name.
+		// Resolve it via index lookup.
+		#emit PUSH.alt
+		#emit PUSH.C       4
+		#emit SYSREQ.C     funcidx
+		#emit STACK        8
+		#emit STOR.pri     INDIRECTION_DATA
+		if (INDIRECTION_DATA == -1)
+		{
+			#emit PROC
+			#emit RETN
+		}
+		{}
+		// Get the address from the index.
+		INDIRECTION_DATA = GetPublicAddressFromIndex(INDIRECTION_DATA);
 	}
-	else if (INDIRECTION_TAG)
+	if (INDIRECTION_TAG)
 	{
 		static
 			i,
@@ -183,17 +212,11 @@ stock Indirect_Call(func, tag, GLOBAL_TAG_TYPES:...)
 			}
 			addr += 4;
 		}
-		{}
-		// No handler, and no tag data.  Just jump to it and hope.
-		#emit LOAD.pri     INDIRECTION_DATA
-		#emit SCTRL        6
 	}
-	else
-	{
-		// No handler, and no tag data.  Just jump to it and hope.
-		#emit LOAD.pri     INDIRECTION_DATA
-		#emit SCTRL        6
-	}
+	{}
+	// No handler, and no tag data.  Just jump to it and hope (hope it has a `PROC` too).
+	#emit LOAD.pri     INDIRECTION_DATA
+	#emit SCTRL        6
 	return 0;
 }
 
@@ -224,16 +247,44 @@ stock string:Indirect_Callstring(func, tag, GLOBAL_TAG_TYPES:...)
 	// Check the pointer type.  If it is in the `COD` area, jump straight to it
 	// with the tag for parameter types (if it isn't 0).  Otherwise, use the
 	// `func` from `DAT` as a pointer to a handler.
-	if (INDIRECTION_DATA > gsCodSize)
+	if (INDIRECTION_DATA >= gsCodSize)
 	{
+		// Get the data at `func - COD`.
 		#emit LOAD.pri     INDIRECTION_DATA
 		#emit LOAD.alt     gsCodSize
 		#emit SUB
-		#emit STOR.pri     INDIRECTION_DATA
+		#emit MOVE.alt
 		#emit LOAD.I
-		#emit SCTRL        6
+		#emit STOR.pri     INDIRECTION_DATA
+		if (!INDIRECTION_DATA)
+		{
+			// Get the function at `func - COD + 4`.
+			#emit CONST.pri    4
+			#emit ADD
+			#emit LOAD.I
+			// Call it, passing `func` as a proper pointer, NOT skipping `PROC`.
+			#emit STOR.alt     INDIRECTION_DATA
+			#emit SCTRL        6
+			// NEVER RETURNS PAST HERE.
+		}
+		{}
+		// `INDIRECTION_DATA` is now a pointer to a string of a function name.
+		// Resolve it via index lookup.
+		#emit PUSH.alt
+		#emit PUSH.C       4
+		#emit SYSREQ.C     funcidx
+		#emit STACK        8
+		#emit STOR.pri     INDIRECTION_DATA
+		if (INDIRECTION_DATA == -1)
+		{
+			#emit PROC
+			#emit RETN
+		}
+		{}
+		// Get the address from the index.
+		INDIRECTION_DATA = GetPublicAddressFromIndex(INDIRECTION_DATA);
 	}
-	else if (INDIRECTION_TAG)
+	if (INDIRECTION_TAG)
 	{
 		static
 			i,
@@ -256,17 +307,11 @@ stock string:Indirect_Callstring(func, tag, GLOBAL_TAG_TYPES:...)
 			}
 			addr += 4;
 		}
-		{}
-		// No handler, and no tag data.  Just jump to it and hope.
-		#emit LOAD.pri     INDIRECTION_DATA
-		#emit SCTRL        6
 	}
-	else
-	{
-		// No handler, and no tag data.  Just jump to it and hope.
-		#emit LOAD.pri     INDIRECTION_DATA
-		#emit SCTRL        6
-	}
+	{}
+	// No handler, and no tag data.  Just jump to it and hope.
+	#emit LOAD.pri     INDIRECTION_DATA
+	#emit SCTRL        6
 	// Never called.  Don't use "static" because it would allocate real memory
 	// in advance.  Instead, this will want to allocate on the stack but never
 	// get hit to do so.
@@ -301,16 +346,44 @@ stock void:Indirect_Callvoid(func, tag, GLOBAL_TAG_TYPES:...)
 	// Check the pointer type.  If it is in the `COD` area, jump straight to it
 	// with the tag for parameter types (if it isn't 0).  Otherwise, use the
 	// `func` from `DAT` as a pointer to a handler.
-	if (INDIRECTION_DATA > gsCodSize)
+	if (INDIRECTION_DATA >= gsCodSize)
 	{
+		// Get the data at `func - COD`.
 		#emit LOAD.pri     INDIRECTION_DATA
 		#emit LOAD.alt     gsCodSize
 		#emit SUB
-		#emit STOR.pri     INDIRECTION_DATA
+		#emit MOVE.alt
 		#emit LOAD.I
-		#emit SCTRL        6
+		#emit STOR.pri     INDIRECTION_DATA
+		if (!INDIRECTION_DATA)
+		{
+			// Get the function at `func - COD + 4`.
+			#emit CONST.pri    4
+			#emit ADD
+			#emit LOAD.I
+			// Call it, passing `func` as a proper pointer, NOT skipping `PROC`.
+			#emit STOR.alt     INDIRECTION_DATA
+			#emit SCTRL        6
+			// NEVER RETURNS PAST HERE.
+		}
+		{}
+		// `INDIRECTION_DATA` is now a pointer to a string of a function name.
+		// Resolve it via index lookup.
+		#emit PUSH.alt
+		#emit PUSH.C       4
+		#emit SYSREQ.C     funcidx
+		#emit STACK        8
+		#emit STOR.pri     INDIRECTION_DATA
+		if (INDIRECTION_DATA == -1)
+		{
+			#emit PROC
+			#emit RETN
+		}
+		{}
+		// Get the address from the index.
+		INDIRECTION_DATA = GetPublicAddressFromIndex(INDIRECTION_DATA);
 	}
-	else if (INDIRECTION_TAG)
+	if (INDIRECTION_TAG)
 	{
 		static
 			i,
@@ -333,19 +406,97 @@ stock void:Indirect_Callvoid(func, tag, GLOBAL_TAG_TYPES:...)
 			}
 			addr += 4;
 		}
-		{}
-		// No handler, and no tag data.  Just jump to it and hope.
-		#emit LOAD.pri     INDIRECTION_DATA
-		#emit SCTRL        6
 	}
-	else
-	{
-		// No handler, and no tag data.  Just jump to it and hope.
-		#emit LOAD.pri     INDIRECTION_DATA
-		#emit SCTRL        6
-	}
+	{}
+	// No handler, and no tag data.  Just jump to it and hope.
+	#emit LOAD.pri     INDIRECTION_DATA
+	#emit SCTRL        6
 	// Don't return anything.
 }
+
+/*-------------------------------------------------------------------------*//**
+ * <param name="func">The function pointer you want to use later.</param>
+ * <remarks>
+ *  If a function pointer is used within one function, that is not a problem.
+ *  However, if you want to store the function pointer for use later, you must
+ *  first "claim" it, so that any associated data is not cleared when the
+ *  parent function ends (i.e. the function that called your function).  After
+ *  use it must be released, and the number of claims must match the number of
+ *  releases.
+ * </remarks>
+ *//*------------------------------------------------------------------------**/
+
+stock Indirect_Claim_(func)
+{
+	if (func >= gsCodSize)
+	{
+		// Get the data at `func - COD`.
+		#emit LOAD.S.pri   func
+		#emit LOAD.alt     gsCodSize
+		#emit SUB
+		#emit MOVE.alt
+		#emit LOAD.I
+		#emit STOR.S.pri   func
+		if (func)
+		{
+			// Probably a string.
+			return;
+		}
+		{}
+		// I'm relying on `alt` not changing here...
+		#emit STOR.S.alt   func
+		#emit POP.pri
+		#emit SCTRL        5
+		// Get the function at `func - COD + 8`.
+		#emit CONST.pri    8
+		#emit ADD
+		#emit LOAD.I
+		#emit SCTRL        6
+	}
+}
+#define Indirect_Claim(%0) Indirect_Claim_(_:%0)
+
+/*-------------------------------------------------------------------------*//**
+ * <param name="func">The function pointer you had previously stored.</param>
+ * <remarks>
+ *  If a function pointer is used within one function, that is not a problem.
+ *  However, if you want to store the function pointer for use later, you must
+ *  first "claim" it, so that any associated data is not cleared when the
+ *  parent function ends (i.e. the function that called your function).  After
+ *  use it must be released, and the number of claims must match the number of
+ *  releases.
+ * </remarks>
+ *//*------------------------------------------------------------------------**/
+
+stock Indirect_Release_(func)
+{
+	if (func >= gsCodSize)
+	{
+		// Get the data at `func - COD`.
+		#emit LOAD.S.pri   func
+		#emit LOAD.alt     gsCodSize
+		#emit SUB
+		#emit MOVE.alt
+		#emit LOAD.I
+		#emit STOR.S.pri   func
+		if (func)
+		{
+			// Probably a string.
+			return;
+		}
+		{}
+		// I'm relying on `alt` not changing here...
+		#emit STOR.S.alt   func
+		#emit POP.pri
+		#emit SCTRL        5
+		// Get the function at `func - COD + 12`.
+		#emit CONST.pri    12
+		#emit ADD
+		#emit LOAD.I
+		#emit SCTRL        6
+	}
+}
+#define Indirect_Release(%0) Indirect_Release_(_:%0)
 
 #if !defined _ALS_OnJITCompile
 	forward OnJITCompile();
