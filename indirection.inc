@@ -122,7 +122,7 @@ SPECIFIER(s);
 #define @%0(%1) (Indirect_Call(_:INDIRECT_DOT:%0,_:(tagof(%0)),%1))
 #define Indirect_Call(_:INDIRECT_DOT:%9&%0,_:(tagof(%9)),%2) Indirect_Call(_:TAGOF_ADDRESSOF:addressof(%0),_:0,%2)
 #define INDIRECT_DOT:.%0,_:(tagof(.%0)) %0,_:(tagof(%0))
-#define TAGOF_ADDRESSOF:addressof(%0<%2>),_:0, addressof(%0),_:tagof(F@_@%2:),
+#define TAGOF_ADDRESSOF:addressof(%0<%2>),_:0, addressof(%0<%2>),_:tagof(F@_@%2:),
 // Can now do:
 //   
 //   @.var(params)
@@ -203,9 +203,9 @@ stock Indirect_Call(func, tag, GLOBAL_TAG_TYPES:...)
 		static
 			i,
 			lTag[32];
+		// Skip the `F@_@` prefix.
 		GetTagNameFromID(INDIRECTION_TAG, lTag);
-		i = 4; // Skip the `F@_@` prefix.
-		for ( ; ; )
+		if (lTag[0]) for (i = 4; ; )
 		{
 			switch (lTag[i++])
 			{
@@ -298,9 +298,9 @@ stock string:Indirect_Callstring(func, tag, GLOBAL_TAG_TYPES:...)
 		static
 			i,
 			lTag[32];
+		// Skip the `F@_@` prefix.
 		GetTagNameFromID(INDIRECTION_TAG, lTag);
-		i = 4; // Skip the `F@_@` prefix.
-		for ( ; ; )
+		if (lTag[0]) for (i = 4; ; )
 		{
 			switch (lTag[i++])
 			{
@@ -397,9 +397,9 @@ stock void:Indirect_Callvoid(func, tag, GLOBAL_TAG_TYPES:...)
 		static
 			i,
 			lTag[32];
+		// Skip the `F@_@` prefix.
 		GetTagNameFromID(INDIRECTION_TAG, lTag);
-		i = 4; // Skip the `F@_@` prefix.
-		for ( ; ; )
+		if (lTag[0]) for (i = 4; ; )
 		{
 			switch (lTag[i++])
 			{
@@ -515,13 +515,10 @@ stock Indirect_Release_(func)
 /*-------------------------------------------------------------------------*//**
  * <param name="id">The ID of the tag to get the specifiers from the name of.
  * </param>
+ * <param name="dest">Where to store the name.</param>
  * <remarks>
- *  If a function pointer is used within one function, that is not a problem.
- *  However, if you want to store the function pointer for use later, you must
- *  first "claim" it, so that any associated data is not cleared when the
- *  parent function ends (i.e. the function that called your function).  After
- *  use it must be released, and the number of claims must match the number of
- *  releases.
+ *  Functions are tagged with a special tag containing their specifiers.  Get
+ *  the string value of that tag from the AMX header.
  * </remarks>
  *//*------------------------------------------------------------------------**/
 
@@ -529,10 +526,30 @@ stock Indirect_Tag(id, dest[32])
 {
 	static
 		lTag[32];
-	GetTagNameFromID(id, lTag);
-	dest[0] = '\0',
-	strcat(dest, lTag[4]);
+	GetTagNameFromID(id, lTag),
+	dest[0] = '\0';
+	if (lTag[0])
+		strcat(dest, lTag[4]);
 }
+
+/*-------------------------------------------------------------------------*//**
+ * <param name="">The array to convert to an offset pointer.</param>
+ * <remarks>
+ *  Strings and arrays are passed relative to `COD` not `DAT` so they can be
+ *  distinguished from normal function pointers.  This function does the offset.
+ * </remarks>
+ *//*------------------------------------------------------------------------**/
+
+stock Indirect_Ptr_(...)
+{
+	assert(numargs() == 1);
+	#emit LOAD.S.pri       12
+	#emit LOAD.alt         gsCodSize
+	#emit ADD
+	#emit RETN
+	return 0;
+}
+#define Indirect_Ptr(%0) Indirect_Ptr_(_:(%0))
 
 #if !defined _ALS_OnJITCompile
 	forward OnJITCompile();
