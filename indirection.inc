@@ -448,6 +448,8 @@ stock Indirect_Claim_(func)
 		#emit MOVE.alt
 		#emit LOAD.I
 		#emit STOR.S.pri   func
+		//#emit JZER.rel     4
+		//#emit RETN
 		if (func)
 		{
 			// Probably a string.
@@ -490,13 +492,16 @@ stock Indirect_Release_(func)
 		#emit MOVE.alt
 		#emit LOAD.I
 		#emit STOR.S.pri   func
+		//#emit JZER.rel     4
+		//#emit RETN
 		if (func)
 		{
 			// Probably a string.
 			return;
 		}
 		{}
-		// I'm relying on `alt` not changing here...
+		// I'm relying on `alt` not changing here.  I wouldn't need to if I
+		// could use jumps in assembly.
 		#emit STOR.S.alt   func
 		#emit POP.pri
 		#emit SCTRL        5
@@ -508,6 +513,19 @@ stock Indirect_Release_(func)
 	}
 }
 #define Indirect_Release(%0) Indirect_Release_(_:%0)
+
+/*-------------------------------------------------------------------------*//**
+ * <param name="id">The ID of the tag to get the specifiers from the name of.
+ * </param>
+ * <remarks>
+ *  If a function pointer is used within one function, that is not a problem.
+ *  However, if you want to store the function pointer for use later, you must
+ *  first "claim" it, so that any associated data is not cleared when the
+ *  parent function ends (i.e. the function that called your function).  After
+ *  use it must be released, and the number of claims must match the number of
+ *  releases.
+ * </remarks>
+ *//*------------------------------------------------------------------------**/
 
 stock Indirect_Tag(id, dest[32])
 {
