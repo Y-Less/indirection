@@ -1,7 +1,7 @@
 {
 	"user": "Y-Less",
 	"repo": "indirection",
-	"entry": "indirection.pwn",
+	"entry": "main.pwn",
 	"output": "indirection.amx",
 	"dependencies": [
 		"sampctl/samp-stdlib",
