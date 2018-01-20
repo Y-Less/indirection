@@ -232,7 +232,7 @@ stock Indirect_Call(func, tag, GLOBAL_TAG_TYPES:...)
 }
 
 // Not `Indirect_CallString` to make use of the `string:` macro.
-stock string:Indirect_CallString(func, tag, GLOBAL_TAG_TYPES:...)
+stock string:Indirect_Callstring(func, tag, GLOBAL_TAG_TYPES:...)
 {
 	static
 		addr;
