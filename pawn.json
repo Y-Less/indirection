@@ -14,7 +14,7 @@
     "name": "default"
   }, {
     "name": "y_testing",
-    "args": [ "-;+", "-(+", "-Z+", "-\\+", "RUN_TESTS=1", "LIGHT_TEST_REPORT=1", "TEST_AUTO_EXIT=1" ]
+    "args": [ "-;+", "-(+", "-Z+", "-\\+", "RUN_TESTS=1", "LIGHT_TEST_REPORT=1", "TEST_AUTO_EXIT=1", "_YSI_NO_VERSION_CHECK=1" ]
   }]
 }
 
