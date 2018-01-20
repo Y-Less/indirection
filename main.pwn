@@ -1,9 +1,5 @@
-#define RUN_TESTS
-#define LIGHT_TEST_REPORT
-#define TEST_AUTO_EXIT
-
 #include <YSI_Core\y_testing>
-#include <indirection\indirection>
+#include "indirection"
 
 new gCall = 0;
 
