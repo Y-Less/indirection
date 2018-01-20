@@ -130,8 +130,6 @@ SPECIFIER(s);
 //   @.&func(params)
 //   
 
-native Indirect_CallLocalFunctionByPtr(const function, const format[], GLOBAL_TAG_TYPES:...) = CallLocalFunction;
-
 stock Indirect_Call(func, tag, GLOBAL_TAG_TYPES:...)
 {
 	static
