@@ -83,7 +83,7 @@ Test:Indirect3()
 {
 	new arr[4] = { 5, 55, 555, 5555 };
 	gCall = 0;
-	TestCall3(Func:Indirect_Ptr("TestCallback3")<iai>, 4, arr, sizeof (arr));
+	TestCall3(Func:Indirect_Ref("TestCallback3")<iai>, 4, arr, sizeof (arr));
 	ASSERT(gCall == 60);
 }
 

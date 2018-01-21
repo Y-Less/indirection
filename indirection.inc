@@ -540,7 +540,7 @@ stock Indirect_Tag(id, dest[32])
  * </remarks>
  *//*------------------------------------------------------------------------**/
 
-stock Indirect_Ptr_(...)
+stock Indirect_Ref_(...)
 {
 	assert(numargs() == 1);
 	#emit LOAD.S.pri       12
@@ -549,7 +549,27 @@ stock Indirect_Ptr_(...)
 	#emit RETN
 	return 0;
 }
-#define Indirect_Ptr(%0) Indirect_Ptr_(_:(%0))
+#define Indirect_Ref(%0) Indirect_Ref_(_:(%0))
+
+/*-------------------------------------------------------------------------*//**
+ * <param name="">The array to convert to an offset pointer.</param>
+ * <remarks>
+ *  Strings and arrays are passed relative to `COD` not `DAT` so they can be
+ *  distinguished from normal function pointers.  This function does the offset.
+ * </remarks>
+ *//*------------------------------------------------------------------------**/
+
+stock Indirect_Ptr_(ptr)
+{
+	#pragma unused ptr
+	assert(numargs() == 1);
+	#emit LOAD.S.pri       12
+	#emit LOAD.alt         gsCodSize
+	#emit ADD
+	#emit RETN
+	return 0;
+}
+#define Indirect_Ptr(%0) Indirect_Ref_(_:(%0))
 
 #if !defined _ALS_OnJITCompile
 	forward OnJITCompile();
