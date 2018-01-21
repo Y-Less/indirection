@@ -576,7 +576,7 @@ stock Indirect_Ptr_(ptr)
 	#emit RETN
 	return 0;
 }
-#define Indirect_Ptr(%0) Indirect_Ref_(_:(%0))
+#define Indirect_Ptr(%0) Indirect_Ptr_(_:(%0))
 
 #if !defined _ALS_OnJITCompile
 	forward OnJITCompile();
