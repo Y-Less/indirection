@@ -42,6 +42,13 @@
 	#error Please update "https://github.com/Zeex/amx_assembly" to the latest version.
 #endif
 
+#if defined CUSTOM_TAG_TYPES
+	#define File,Float, Float,File,Text3D,CUSTOM_TAG_TYPES
+#else
+	#define File,Float, Float,File,Text3D
+#endif
+#define GLOBAL_TAG_TYPES {_,Language,Bit,Text,Menu,Style,XML,Bintree,Group,Timer,File,Float,}
+
 enum E_INDIRECTION
 {
 	E_INDIRECTION_ALWAYS_NULL, // So we can tell this is not a string.
