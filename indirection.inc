@@ -578,6 +578,45 @@ stock Indirect_Ptr_(ptr)
 }
 #define Indirect_Ptr(%0) Indirect_Ptr_(_:(%0))
 
+/*-------------------------------------------------------------------------*//**
+ * <param name="">The array to convert to an offset pointer.</param>
+ * <remarks>
+ *  Strings and arrays are passed relative to `COD` not `DAT` so they can be
+ *  distinguished from normal function pointers.  This function does the offset.
+ * </remarks>
+ *//*------------------------------------------------------------------------**/
+
+stock Indirect_DeRef_(...)
+{
+	assert(numargs() == 1);
+	#emit LOAD.S.pri       12
+	#emit LOAD.alt         gsCodSize
+	#emit SUB
+	#emit RETN
+	return 0;
+}
+#define Indirect_DeRef(%0) Indirect_DeRef_(_:(%0))
+
+/*-------------------------------------------------------------------------*//**
+ * <param name="">The array to convert to an offset pointer.</param>
+ * <remarks>
+ *  Strings and arrays are passed relative to `COD` not `DAT` so they can be
+ *  distinguished from normal function pointers.  This function does the offset.
+ * </remarks>
+ *//*------------------------------------------------------------------------**/
+
+stock Indirect_DePtr_(ptr)
+{
+	#pragma unused ptr
+	assert(numargs() == 1);
+	#emit LOAD.S.pri       12
+	#emit LOAD.alt         gsCodSize
+	#emit SUB
+	#emit RETN
+	return 0;
+}
+#define Indirect_DePtr(%0) Indirect_DePtr_(_:(%0))
+
 #if !defined _ALS_OnJITCompile
 	forward OnJITCompile();
 #endif
