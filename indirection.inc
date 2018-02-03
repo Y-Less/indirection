@@ -430,7 +430,7 @@ stock void:Indirect_Callvoid(func, tag, GLOBAL_TAG_TYPES:...)
 	// Don't return anything.
 }
 
-stock Indirect_Array(func, tag, params[], size = sizeof (params))
+stock Indirect_Array(func, tag, const params[], size = sizeof (params))
 {
 	static
 		ret,
