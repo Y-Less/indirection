@@ -39,6 +39,13 @@ static stock TestCallback2(a, string:s[], d)
 }
 #define CALL@TestCallback2 TestCallback2(0,"",0)
 
+static TestCallback4(a, &b, c)
+{
+	ASSERT(numargs() == 3);
+	gCall = a + b + c;
+	--b;
+}
+
 public TestCallback3(a, arr[], size)
 {
 	ASSERT(numargs() == 3);
@@ -51,6 +58,28 @@ TestCall1(Func:func<iii>, a, b, c)
 	@.func(a, b, c);
 }
 #define TestCall1(&%0,%1) TestCall1(addressof(%0<iii>),%1)
+
+TestCallArray1(Func:func<iii>, a, b, c)
+{
+	new
+		arr[3];
+	arr[0] = ref(a);
+	arr[1] = ref(b);
+	arr[2] = ref(c);
+	Indirect_Array(_:func, tagof (func), arr);
+}
+#define TestCallArray1(&%0,%1) TestCallArray1(addressof(%0<iii>),%1)
+
+TestCallArray2(Func:func<ivi>, a, &b, c)
+{
+	new
+		arr[3];
+	arr[0] = ref(a);
+	arr[1] = ref(b);
+	arr[2] = ref(c);
+	Indirect_Array(_:func, tagof (func), arr);
+}
+#define TestCallArray2(&%0,%1) TestCallArray2(addressof(%0<ivi>),%1)
 
 TestCall2(Func:func<isi>, a, d)
 {
@@ -98,9 +127,27 @@ Test:IndirectV()
 	ASSERT(TRUE);
 }
 
+Test:IndirectArray()
+{
+	TestCallArray1(&TestCallback1, 9, 9, 9);
+	ASSERT(gCall == 27);
+	new
+		a = 8;
+	TestCallArray2(&TestCallback4, 9, a, 7);
+	ASSERT(gCall == 24);
+	ASSERT(a == 7);
+	TestCallArray2(&TestCallback4, 9, a, 7);
+	ASSERT(gCall == 23);
+	ASSERT(a == 6);
+	TestCallArray2(&TestCallback4, 9, a, 7);
+	ASSERT(gCall == 22);
+	ASSERT(a == 5);
+}
+
 TestCompile:Indirection()
 {
 	Indirect_Call(0, 0);
+	Indirect_Array(0, 0, "", 0);
 	Indirect_Callstring(0, 0);
 	Indirect_Callvoid(0, 0);
 	Indirect_Claim(0);

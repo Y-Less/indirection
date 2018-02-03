@@ -430,6 +430,126 @@ stock void:Indirect_Callvoid(func, tag, GLOBAL_TAG_TYPES:...)
 	// Don't return anything.
 }
 
+stock Indirect_Array(func, tag, params[], size = sizeof (params))
+{
+	static
+		ret,
+		src;
+	#pragma unused func, tag, params, size
+	// Get the previous frame.  This undoes the effects of our `PROC` so the
+	// called function must have a proper `PROC`.
+	#emit POP.pri
+	#emit SCTRL        5
+	// Get the return address.
+	#emit POP.pri
+	#emit STOR.pri     ret
+	// Remove the parameter count.
+	#emit POP.pri
+	// Get the target tag.
+	#emit POP.pri
+	#emit STOR.pri     INDIRECTION_DATA
+	// Get the target function.
+	#emit POP.pri
+	#emit STOR.pri     INDIRECTION_TAG
+	// Get the source data.
+	#emit POP.alt
+	#emit STOR.alt     src
+	// Get the size.
+	#emit POP.alt
+	#emit SHL.C.alt    2
+//	#emit STOR.alt     cnt
+	// We cannot just adjust the stack size while the other parameters are still
+	// on it, since the new stack might be smaller than the old one, and dealing
+	// with that in a simple way is not possible.  Well, it is possible - it's
+	// what we are doing!  Copy the parameters.
+	#emit LCTRL        4
+	#emit SUB
+	#emit SCTRL        4
+	#emit PUSH.alt
+	#emit PUSH.alt
+	#emit PUSH.C       0
+	#emit PUSH         src
+	#emit STOR.pri     src
+	#emit PUSH.pri
+	#emit PUSH.C       20
+	#emit SYSREQ.C     memcpy
+	#emit MOVE.pri
+	#emit STACK        24
+	#emit PUSH.pri
+	#emit PUSH         ret
+	// 
+	// Check the pointer type.  If it is in the `COD` area, jump straight to it
+	// with the tag for parameter types (if it isn't 0).  Otherwise, use the
+	// `func` from `DAT` as a pointer to a handler.
+	if (INDIRECTION_DATA >= gsCodSize)
+	{
+		// Get the data at `func - COD`.
+		#emit LOAD.pri     INDIRECTION_DATA
+		#emit LOAD.alt     gsCodSize
+		#emit SUB
+		#emit MOVE.alt
+		#emit LOAD.I
+		#emit STOR.pri     INDIRECTION_DATA
+		if (!INDIRECTION_DATA)
+		{
+			#emit STOR.alt     INDIRECTION_DATA
+			// Get the function at `func - COD + 4`.
+			#emit LOAD.pri     INDIRECTION_DATA
+			#emit ADD.C        4
+			#emit LOAD.I
+			// Call it, passing `func` as a proper pointer, NOT skipping `PROC`.
+			#emit SCTRL        6
+			// NEVER RETURNS PAST HERE.
+		}
+		{}
+		// `INDIRECTION_DATA` is now a pointer to a string of a function name.
+		// Resolve it via index lookup.
+		#emit PUSH.alt
+		#emit PUSH.C       4
+		#emit SYSREQ.C     funcidx
+		#emit STACK        8
+		#emit STOR.pri     INDIRECTION_DATA
+		if (INDIRECTION_DATA == -1)
+		{
+			// Failure.
+			#emit PROC
+			#emit RETN
+		}
+		{}
+		// Get the address from the index.
+		INDIRECTION_DATA = GetPublicAddressFromIndex(INDIRECTION_DATA);
+	}
+	if (INDIRECTION_TAG)
+	{
+		static
+			i,
+			lTag[32];
+		// Skip the `F@_@` prefix.
+		GetTagNameFromID(INDIRECTION_TAG, lTag);
+		if (lTag[0]) for (i = 4; ; )
+		{
+			switch (lTag[i++])
+			{
+			case 'i', 'd', 't', 'f', 'c':
+			{
+				// Resolve non-reference parameters.
+				#emit LREF.pri   src
+				#emit LOAD.I
+				#emit SREF.pri   src
+			}
+			case '\0', 'x':
+				break;
+			}
+			src += 4;
+		}
+	}
+	{}
+	// No handler, and no tag data.  Just jump to it and hope (hope it has a `PROC` too).
+	#emit LOAD.pri     INDIRECTION_DATA
+	#emit SCTRL        6
+	return 0;
+}
+
 /*-------------------------------------------------------------------------*//**
  * <param name="func">The function pointer you want to use later.</param>
  * <remarks>
