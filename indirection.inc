@@ -141,7 +141,12 @@ stock Indirect_Call(func, tag, GLOBAL_TAG_TYPES:...)
 {
 	static
 		addr;
-	#pragma unused func, tag
+	#pragma unused tag
+	if (!func)
+	{
+		return 0;
+	}
+	{}
 	// The COD and DAT segments are different, so `func` pointing in to DAT
 	// relative to COD will not be a valid pointer, and THAT you can detect!
 	// 
@@ -241,7 +246,22 @@ stock string:Indirect_Callstring(func, tag, GLOBAL_TAG_TYPES:...)
 {
 	static
 		addr;
-	#pragma unused func, tag
+	#pragma unused tag
+	if (!func)
+	{
+		// Get the offset to the secret return parameter.
+		#emit LOAD.S.pri   8
+		#emit ADDR.alt     12
+		#emit ADD
+		#emit LOAD.I
+		#emit MOVE.alt
+		#emit ZERO.pri
+		#emit STOR.I
+		#emit RETN
+		new ret[YSI_MAX_STRING];
+		return ret;
+	}
+	{}
 	#emit ADDR.pri     20
 	#emit STOR.pri     addr
 	#emit POP.pri
@@ -340,7 +360,12 @@ stock void:Indirect_Callvoid(func, tag, GLOBAL_TAG_TYPES:...)
 {
 	static
 		addr;
-	#pragma unused func, tag
+	#pragma unused tag
+	if (!func)
+	{
+		return;
+	}
+	{}
 	#emit ADDR.pri     20
 	#emit STOR.pri     addr
 	#emit POP.pri
