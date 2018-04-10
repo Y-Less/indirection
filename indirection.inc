@@ -137,6 +137,14 @@ SPECIFIER(s);
 //   @.&func(params)
 //   
 
+forward __Indirect_FuncInc__();
+
+public __Indirect_FuncInc__()
+{
+	memcpy("", "", 0, 0, 0);
+	funcidx("");
+}
+
 stock Indirect_Call(func, tag, GLOBAL_TAG_TYPES:...)
 {
 	static
