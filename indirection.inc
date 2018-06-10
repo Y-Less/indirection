@@ -101,7 +101,6 @@ static stock
 // can pass a typed pointer to a function that doesn't expect any type for
 // backwards-compatability reasons.  I decided against this though - make them
 // strong and give warnings on all old code!
-#define callback: F@_@:
 #define Func:%0<%1> F@_@%1:%0
 
 // Examples of predeclarations of specifier types.  These fix a bug in the old
