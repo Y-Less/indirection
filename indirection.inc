@@ -136,13 +136,15 @@ SPECIFIER(s);
 //   @.&func(params)
 //   
 
-forward __Indirect_FuncInc__();
-
-public __Indirect_FuncInc__()
-{
-	memcpy("", "", 0, 0, 0);
-	funcidx("");
-}
+#if !defined __PawnBuild
+	forward __Indirect_FuncInc__();
+	
+	public __Indirect_FuncInc__()
+	{
+		memcpy("", "", 0, 0, 0);
+		funcidx("");
+	}
+#endif
 
 stock Indirect_Call(func, tag, GLOBAL_TAG_TYPES:...)
 {
