@@ -607,7 +607,7 @@ stock Indirect_GetMeta_(func)
 		if (func)
 		{
 			// Probably a string.
-			return;
+			return 0;
 		}
 		{}
 		// I'm relying on `alt` not changing here...
@@ -652,7 +652,7 @@ stock Indirect_SetMeta_(func, data)
 		#emit STOR.I
 	}
 }
-#define Indirect_GetMeta(%0) Indirect_GetMeta_(_:%0)
+#define Indirect_SetMeta(%0) Indirect_SetMeta_(_:%0)
 
 /*-------------------------------------------------------------------------*//**
  * <param name="func">The function pointer you want to use later.</param>
