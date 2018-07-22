@@ -55,6 +55,7 @@ enum E_INDIRECTION
 	E_INDIRECTION_HANDER,      // Called by `@` to handle this pointer.
 	E_INDIRECTION_CLAIM,       // Called by `Indirect_Claim`.
 	E_INDIRECTION_RELEASE,     // Called by `Indirect_Release`.
+	E_INDIRECTION_METADATA,    // Only used by end-users.
 }
 
 stock
@@ -584,6 +585,74 @@ stock Indirect_Array(func, tag, const params[], size = sizeof (params))
 	#emit SCTRL        6
 	return 0;
 }
+
+/*-------------------------------------------------------------------------*//**
+ * <param name="func">The function pointer with attached metadata.</param>
+ * <remarks>
+ *  Gets extra data from the pointer.
+ * </remarks>
+ *//*------------------------------------------------------------------------**/
+
+stock Indirect_GetMeta_(func)
+{
+	if (func >= gsCodSize)
+	{
+		// Get the data at `func - COD`.
+		#emit LOAD.S.pri   func
+		#emit LOAD.alt     gsCodSize
+		#emit SUB
+		#emit MOVE.alt
+		#emit LOAD.I
+		#emit STOR.S.pri   func
+		if (func)
+		{
+			// Probably a string.
+			return;
+		}
+		{}
+		// I'm relying on `alt` not changing here...
+		// Get the function at `func - COD + 16`.
+		#emit CONST.pri    16
+		#emit ADD
+		#emit LOAD.I
+		#emit RETN
+	}
+	return 0;
+}
+#define Indirect_GetMeta(%0) Indirect_GetMeta_(_:%0)
+
+/*-------------------------------------------------------------------------*//**
+ * <param name="func">The function pointer to attach metadata to.</param>
+ * <param name="data">The metadata.</param>
+ *//*------------------------------------------------------------------------**/
+
+stock Indirect_SetMeta_(func, data)
+{
+	if (func >= gsCodSize)
+	{
+		// Get the data at `func - COD`.
+		#emit LOAD.S.pri   func
+		#emit LOAD.alt     gsCodSize
+		#emit SUB
+		#emit MOVE.alt
+		#emit LOAD.I
+		#emit STOR.S.pri   func
+		if (func)
+		{
+			// Probably a string.
+			return;
+		}
+		{}
+		// I'm relying on `alt` not changing here...
+		// Get the function at `func - COD + 16`.
+		#emit CONST.pri    16
+		#emit ADD
+		#emit LOAD.S.alt   data
+		#emit XCHG
+		#emit STOR.I
+	}
+}
+#define Indirect_GetMeta(%0) Indirect_GetMeta_(_:%0)
 
 /*-------------------------------------------------------------------------*//**
  * <param name="func">The function pointer you want to use later.</param>
