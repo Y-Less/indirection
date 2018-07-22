@@ -778,6 +778,21 @@ stock Indirect_DePtr_(ptr)
 
 /*-------------------------------------------------------------------------*//**
  * <remarks>
+ *  A generic public wrapper for calling inline functions.
+ * </remarks>
+ *//*------------------------------------------------------------------------**/
+
+forward Indirect_FromCallback(Func:cb<>, bool:release);
+
+public Indirect_FromCallback(Func:cb<>, bool:release)
+{
+	@.cb();
+	if (release)
+		Indirect_Release(cb);
+}
+
+/*-------------------------------------------------------------------------*//**
+ * <remarks>
  *  Get the size of the COD AMX segment.
  * </remarks>
  *//*------------------------------------------------------------------------**/
