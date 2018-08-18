@@ -855,9 +855,10 @@ forward Indirect_FromCallback(Func:cb<>, bool:release);
 
 public Indirect_FromCallback(Func:cb<>, bool:release)
 {
-	@.cb();
+	new ret = @.cb();
 	if (release)
 		Indirect_Release(cb);
+	return ret;
 }
 
 /*-------------------------------------------------------------------------*//**
