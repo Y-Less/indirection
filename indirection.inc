@@ -867,13 +867,18 @@ public Indirect_FromCallback(Func:cb<>, bool:release)
  * </remarks>
  *//*------------------------------------------------------------------------**/
 
-public OnJITCompile()
+Indirect_Init()
 {
 	AddressofResolve();
 	new
 		amxhdr[AMX_HDR];
 	GetAmxHeader(amxhdr);
 	gsCodSize = amxhdr[AMX_HDR_DAT] - amxhdr[AMX_HDR_COD];
+}
+ 
+public OnJITCompile()
+{
+	Indirect_Init();
 	#if defined Indirection_OnJITCompile
 		return Indirection_OnJITCompile();
 	#else
@@ -883,11 +888,7 @@ public OnJITCompile()
 
 public OnFilterScriptInit()
 {
-	AddressofResolve();
-	new
-		amxhdr[AMX_HDR];
-	GetAmxHeader(amxhdr);
-	gsCodSize = amxhdr[AMX_HDR_DAT] - amxhdr[AMX_HDR_COD];
+	Indirect_Init();
 	#if defined Indirection_OnFilterScriptInit
 		Indirection_OnFilterScriptInit();
 	#endif
@@ -896,11 +897,7 @@ public OnFilterScriptInit()
 
 public OnGameModeInit()
 {
-	AddressofResolve();
-	new
-		amxhdr[AMX_HDR];
-	GetAmxHeader(amxhdr);
-	gsCodSize = amxhdr[AMX_HDR_DAT] - amxhdr[AMX_HDR_COD];
+	Indirect_Init();
 	#if defined Indirection_OnGameModeInit
 		Indirection_OnGameModeInit();
 	#endif
