@@ -79,11 +79,10 @@
 #endif
 
 #if defined CUSTOM_TAG_TYPES
-	#define File,Float, Float,File,Text3D,CUSTOM_TAG_TYPES
+	#define GLOBAL_TAG_TYPES {_,Language,Bit,Text,Menu,Style,XML,Bintree,Group,Timer,File,Float,Text3D,CUSTOM_TAG_TYPES}
 #else
-	#define File,Float, Float,File,Text3D
+	#define GLOBAL_TAG_TYPES {_,Language,Bit,Text,Menu,Style,XML,Bintree,Group,Timer,File,Float,Text3D}
 #endif
-#define GLOBAL_TAG_TYPES {_,Language,Bit,Text,Menu,Style,XML,Bintree,Group,Timer,File,Float,}
 
 enum E_INDIRECTION
 {
