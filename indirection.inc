@@ -904,11 +904,14 @@ public Indirect_FromCallback(Func:cb<>, bool:release)
 
 Indirect_Init()
 {
-	AddressofResolve();
-	new
-		amxhdr[AMX_HDR];
-	GetAmxHeader(amxhdr);
-	gsCodSize = amxhdr[AMX_HDR_DAT] - amxhdr[AMX_HDR_COD];
+	if (!gsCodSize)
+	{
+		AddressofResolve();
+		new
+			amxhdr[AMX_HDR];
+		GetAmxHeader(amxhdr);
+		gsCodSize = amxhdr[AMX_HDR_DAT] - amxhdr[AMX_HDR_COD];
+	}
 }
  
 public OnJITCompile()
