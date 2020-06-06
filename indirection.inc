@@ -94,11 +94,11 @@ enum E_INDIRECTION
 }
 
 stock
-	INDIRECTION_DATA,
-	INDIRECTION_TAG;
+	INDIRECTION_DATA = 0,
+	INDIRECTION_TAG = 0;
 
 static stock
-	gsCodSize; // The size of `COD`.
+	gsCodSize = 0; // The size of `COD`.
 
 #if !defined YSI_MAX_STRING
 	#define YSI_MAX_STRING (144)
@@ -186,7 +186,7 @@ SPECIFIER(s);
 stock Indirect_Call(func, tag, GLOBAL_TAG_TYPES:...)
 {
 	static
-		addr;
+		addr = 0;
 	#pragma unused tag
 	if (!func)
 	{
@@ -259,7 +259,7 @@ stock Indirect_Call(func, tag, GLOBAL_TAG_TYPES:...)
 	if (INDIRECTION_TAG)
 	{
 		static
-			i,
+			i = 0,
 			lTag[32];
 		// Skip the `F@_@` prefix.
 		GetTagNameFromID(INDIRECTION_TAG, lTag);
@@ -291,7 +291,7 @@ stock Indirect_Call(func, tag, GLOBAL_TAG_TYPES:...)
 stock string:Indirect_Callstring(func, tag, GLOBAL_TAG_TYPES:...)
 {
 	static
-		addr;
+		addr = 0;
 	#pragma unused tag
 	if (!func)
 	{
@@ -369,7 +369,7 @@ stock string:Indirect_Callstring(func, tag, GLOBAL_TAG_TYPES:...)
 	if (INDIRECTION_TAG)
 	{
 		static
-			i,
+			i = 0,
 			lTag[32];
 		// Skip the `F@_@` prefix.
 		GetTagNameFromID(INDIRECTION_TAG, lTag);
@@ -405,7 +405,7 @@ stock string:Indirect_Callstring(func, tag, GLOBAL_TAG_TYPES:...)
 stock void:Indirect_Callvoid(func, tag, GLOBAL_TAG_TYPES:...)
 {
 	static
-		addr;
+		addr = 0;
 	#pragma unused tag
 	if (!func)
 	{
@@ -473,7 +473,7 @@ stock void:Indirect_Callvoid(func, tag, GLOBAL_TAG_TYPES:...)
 	if (INDIRECTION_TAG)
 	{
 		static
-			i,
+			i = 0,
 			lTag[32];
 		// Skip the `F@_@` prefix.
 		GetTagNameFromID(INDIRECTION_TAG, lTag);
@@ -504,8 +504,8 @@ stock void:Indirect_Callvoid(func, tag, GLOBAL_TAG_TYPES:...)
 stock Indirect_Array(func, tag, const params[], size = sizeof (params))
 {
 	static
-		ret,
-		src;
+		ret = 0,
+		src = 0;
 	#pragma unused func, tag, params, size
 	// Get the previous frame.  This undoes the effects of our `PROC` so the
 	// called function must have a proper `PROC`.
@@ -593,7 +593,7 @@ stock Indirect_Array(func, tag, const params[], size = sizeof (params))
 	if (INDIRECTION_TAG)
 	{
 		static
-			i,
+			i = 0,
 			lTag[32];
 		// Skip the `F@_@` prefix.
 		GetTagNameFromID(INDIRECTION_TAG, lTag);
