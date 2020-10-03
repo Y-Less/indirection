@@ -78,10 +78,12 @@
 	#error Please update "https://github.com/Zeex/amx_assembly" to the latest version.
 #endif
 
-#if defined CUSTOM_TAG_TYPES
-	#define GLOBAL_TAG_TYPES {_,Bit,Text,Group,File,Float,Text3D,CUSTOM_TAG_TYPES}
-#else
-	#define GLOBAL_TAG_TYPES {_,Bit,Text,Group,File,Float,Text3D}
+#if !defined GLOBAL_TAG_TYPES
+	#if defined CUSTOM_TAG_TYPES
+		#define GLOBAL_TAG_TYPES {_,Bit,Text,Group,File,Float,Text3D,CUSTOM_TAG_TYPES}
+	#else
+		#define GLOBAL_TAG_TYPES {_,Bit,Text,Group,File,Float,Text3D}
+	#endif
 #endif
 
 enum E_INDIRECTION
