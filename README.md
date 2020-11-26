@@ -254,3 +254,24 @@ sampctl package run
 
 And connect to `localhost:7777` to test.
 
+### Metadata
+
+You can attach a single piece of metadata to a function.  This is arbitrary data that you can access via the function handle:
+
+```pawn
+Indirect_SetMeta(func, 5);
+printf("%d", Indirect_GetMeta(func)); // Prints 5
+```
+
+This allows you to associate things like handles, for example a timer handle:
+
+```
+stock SetTimerCallback(Func:func<>, time, bool:repeat)
+{
+	Indirect_Claim(func);
+	new timer = SetTimerEx("@y_inlineTimerInvoke", time, repeat, "ii", _:func, !repeat);
+	Indirect_SetMeta(func, timer);
+	return _:func;
+}
+```
+
