@@ -162,9 +162,9 @@ SPECIFIER(s);
 //   
 // It would save the stack manipulation though (not convinced it would be less
 // code though with the generation of multiple function calls).
-#define @%0(%1) (Indirect_Call(_:INDIRECT_DOT:%0,_:(tagof(%0)NO_TAGOF$),%1))
-#define Indirect_Call(_:INDIRECT_DOT:%9&%0,_:(tagof(%9)NO_TAGOF$),%2) Indirect_Call(_:TAGOF_ADDRESSOF:addressof(%0),_:0,%2)
-#define INDIRECT_DOT:.%0,_:(tagof(.%0)NO_TAGOF$) %0,_:(tagof(%0)NO_TAGOF$)
+#define @ str_new_static
+#define str_new_static.%0(%1) (Indirect_Call(_:%0,_:(tagof(%0)NO_TAGOF$),%1))
+#define Indirect_Call(_:%9&%0,_:(tagof(%9)NO_TAGOF$),%2) Indirect_Call(_:TAGOF_ADDRESSOF:addressof(%0),_:0,%2)
 #define TAGOF_ADDRESSOF:addressof(%0<%2>),_:0, addressof(%0<%2>),_:tagof(F@_@%2:)NO_TAGOF$,
 // Can now do:
 //   
