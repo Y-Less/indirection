@@ -848,17 +848,6 @@ stock Indirect_Ptr_(ptr)
 stock Indirect_DeRef_(...)
 {
 	assert(numargs() == 1);
-	#emit LREF.S.pri       12
-	#emit LOAD.alt         gsCodSize
-	#emit SUB
-	#emit RETN
-	return 0;
-}
-#define Indirect_DeRef(%0) Indirect_DeRef_(_:(%0), sizeof (%0[]))
-
-stock Indirect_DeRef2(ptr)
-{
-	assert(numargs() == 1);
 	#emit LOAD.S.pri       12
 	#emit LOAD.alt         gsCodSize
 	#emit SUB
