@@ -107,26 +107,38 @@ static stock
 #define string:
 #define void:
 
+#define PP_LEFT_BRACKET<> (
+
 #if !defined TAGOF
 	#if ((__Pawn & 0x0F) >= 0x0A) || ((__Pawn & 0xF0) >= 0xA0)
-		#define TAGOF(%0);
 		// Defer `tagof` on things with colons slightly to remove anything after
 		// it.  This lets us do `tagof (Float:i)` with no problem, since the `i`
 		// is removed.
-		#define TAGOF@[%0] %0:
-		#define tagof(%0:%1)NO_TAGOF$ tagof(TAGOF@[%0])
+		#define TAGOF(%0);
+		#define __TAGOF__[%0] %0:
+		#define __TAGOF:tagof%9PP_LEFT_BRACKET<>%0:%1)__NO_TAGOF$)) tagof%9PP_LEFT_BRACKET<>__TAGOF__[%0])))
+		#define tagof(%0) ((_:__TAGOF:tagof PP_LEFT_BRACKET<>%0)__NO_TAGOF$))
+		#define __NO_TAGOF$
+	#elseif defined __COMPILER_TAG_DATA
+		#define TAGOF(%0);
 	#else
-		#define TAGOF(%0); stock const %0:TAGOF@%0;
-		#define TAGOF@%0\32; TAGOF@
-		#define tagof(%0:%1)NO_TAGOF$ (tagof(TAGOF@%0))
+		#define TAGOF(%0); stock const %0:__TAGOF__%0;
+		#define __TAGOF__%0\32; __TAGOF__
+		#define __TAGOF:tagof%9PP_LEFT_BRACKET<>%0:%1)__NO_TAGOF$)) tagof%9PP_LEFT_BRACKET<>__TAGOF__%0)))
+		#define tagof(%0) ((_:__TAGOF:tagof PP_LEFT_BRACKET<>%0)__NO_TAGOF$))
+		#define __NO_TAGOF$
 	#endif
-	#define TAGOF@F@_@%0\32; TAGOF@F@_@
-	#define SPECIFIER(%0) TAGOF(F@_@%0)
-	#define NO_TAGOF$
-	
-	TAGOF(Float);
-	TAGOF(File);
+
+	#define __TAGOF__F@_@%0\32; __TAGOF__F@_@
+	#if defined __COMPILER_TAG_DATA
+		#define SPECIFIER(%0) __COMPILER_TAG_DATA(F@_@%0,0)
+	#else
+		#define SPECIFIER(%0) TAGOF(F@_@%0)
+	#endif
 #endif
+
+TAGOF(Float);
+TAGOF(File);
 
 // Technically the function tags are not always `F@_@`.  The third character can
 // be anything, and is reserved for representing the return type.  However, it
@@ -144,7 +156,7 @@ static stock
 // compiler where you can't (always) do `tagof (Float:)`.  This is relevant here
 // since the specifiers are passed as `F@_@i:Func`, so we need `tagof (F@_@i:)`
 // to get at the specifier.  However, since that doesn't work, we instead need
-// `tagof (TAGOF@F@_@i)` with `stock const F@_@i:TAGOF@F@_@i`.  I.e. we need a
+// `tagof (__TAGOF__F@_@i)` with `stock const F@_@i:__TAGOF__F@_@i`.  I.e. we need a
 // variable using the tag to get the tag from, instead of getting it directly.
 SPECIFIER(i);
 SPECIFIER(s);
@@ -163,9 +175,9 @@ SPECIFIER(s);
 // It would save the stack manipulation though (not convinced it would be less
 // code though with the generation of multiple function calls).
 #define @ str_new_static
-#define str_new_static.%0(%1) (Indirect_Call(_:%0,_:(tagof(%0)NO_TAGOF$),%1))
-#define Indirect_Call(_:%9&%0,_:(tagof(%9)NO_TAGOF$),%2) Indirect_Call(_:TAGOF_ADDRESSOF:addressof(%0),_:0,%2)
-#define TAGOF_ADDRESSOF:addressof(%0<%2>),_:0, addressof(%0<%2>),_:tagof(F@_@%2:)NO_TAGOF$,
+#define str_new_static.%0(%1) (Indirect_Call(_:%0,_:(tagof(%0)),%1))
+#define Indirect_Call(_:%9&%0,_:(tagof(%9)),%2) Indirect_Call(_:TAGOF_ADDRESSOF:addressof(%0),_:0,%2)
+#define TAGOF_ADDRESSOF:addressof(%0<%2>),_:0, addressof(%0<%2>),_:tagof(F@_@%2:),
 // Can now do:
 //   
 //   @.var(params)
