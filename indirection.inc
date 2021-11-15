@@ -116,17 +116,29 @@ static stock
 		// is removed.
 		#define TAGOF(%0);
 		#define __TAGOF__[%0] %0:
-		#define __TAGOF:tagof%9PP_LEFT_BRACKET<>%0:%1)__NO_TAGOF$)) tagof%9PP_LEFT_BRACKET<>__TAGOF__[%0])))
-		#define tagof(%0) ((_:__TAGOF:tagof PP_LEFT_BRACKET<>%0)__NO_TAGOF$))
-		#define __NO_TAGOF$
+		#define tagof(%0:%1) __NO_TAGOF:__IS_TAGOF:tagof PP_LEFT_BRACKET<>%0:$%1)
+		#define __NO_TAGOF:__IS_TAGOF:tagof%9<>%0)%2:$%1) tagof%9<>%0)%2:%1)
+		#define __IS_TAGOF:tagof%9<>%0:$%1) tagof%9<>__TAGOF__[%0])
 	#elseif defined __COMPILER_TAG_DATA
 		#define TAGOF(%0);
 	#else
 		#define TAGOF(%0); stock const %0:__TAGOF__%0;
 		#define __TAGOF__%0\32; __TAGOF__
-		#define __TAGOF:tagof%9PP_LEFT_BRACKET<>%0:%1)__NO_TAGOF$)) tagof%9PP_LEFT_BRACKET<>__TAGOF__%0)))
-		#define tagof(%0) ((_:__TAGOF:tagof PP_LEFT_BRACKET<>%0)__NO_TAGOF$))
-		#define __NO_TAGOF$
+		#define tagof(%0:%1) __NO_TAGOF:__IS_TAGOF:tagof PP_LEFT_BRACKET<>%0:$%1)
+		#define __NO_TAGOF:__IS_TAGOF:tagof%9<>%0)%2:$%1) tagof%9<>%0)%2:%1)
+		#define __IS_TAGOF:tagof%9<>%0:$%1) tagof%9<>__TAGOF__%0)
+	#endif
+
+	#if !defined __COMPILER_TAG_DATA
+		stock bool:operator==(_:a, __NO_TAGOF:b)
+		{
+			return a == _:b;
+		}
+
+		stock bool:operator!=(_:a, __NO_TAGOF:b)
+		{
+			return a != _:b;
+		}
 	#endif
 
 	#define __TAGOF__F@_@%0\32; __TAGOF__F@_@
