@@ -1,7 +1,45 @@
+/*
+	Version: MPL 1.1
+	
+	The contents of this file are subject to the Mozilla Public License Version 
+	1.1 (the "License"); you may not use this file except in compliance with 
+	the License. You may obtain a copy of the License at 
+	http://www.mozilla.org/MPL/
+	
+	Software distributed under the License is distributed on an "AS IS" basis,
+	WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+	for the specific language governing rights and limitations under the
+	License.
+	
+	The Original Code is the indirection.inc function pointers library.
+	
+	The Initial Developer of the Original Code is Alex "Y_Less" Cole.
+	Portions created by the Initial Developer are Copyright (c) 2022
+	the Initial Developer. All Rights Reserved.
+*/
+
 #if defined _INC_indirection
 	#endinput
 #endif
 #define _INC_indirection
+
+/**
+ * <library
+ *   name="indirection"
+ *   summary="Function pointers and code redirection."
+ *   license="(c) 2022, Alex "Y_Less" Cole, licensed under MPL 1.1"
+ * >
+ *   <remarks>
+ *     Indirection is a system for calling function pointers in a generic and
+ *     type-safe way.  Instead of <c>CallLocalFunction</c>, <c>Call</c>,
+ *     <c>defer</c>, <c>Callback_Call</c>, or any other method, this gives one
+ *     common interface which can be extended by library authors; utilising tags
+ *     for compile-time parameters.
+ *   </remarks>
+ * </library>
+ */
+
+///
 
 #if !defined ADDRESSOF_INC
 	#tryinclude "..\amx\addressof"
@@ -207,6 +245,7 @@ SPECIFIER(s);
 	}
 #endif
 
+/// <library>indirection</library>
 stock Indirect_Call(func, tag, GLOBAL_TAG_TYPES:...)
 {
 	static
@@ -311,7 +350,10 @@ stock Indirect_Call(func, tag, GLOBAL_TAG_TYPES:...)
 	return 0;
 }
 
-// Not `Indirect_CallString` to make use of the `string:` macro.
+/// <library>indirection</library>
+/// <remarks>
+///   Not `Indirect_CallString` to make use of the `string:` macro.
+/// </remarks>
 stock string:Indirect_Callstring(func, tag, GLOBAL_TAG_TYPES:...)
 {
 	static
@@ -425,7 +467,10 @@ stock string:Indirect_Callstring(func, tag, GLOBAL_TAG_TYPES:...)
 	return ret;
 }
 
-// Not `Indirect_Callvoid` to make use of the `void:` macro.
+/// <library>indirection</library>
+/// <remarks>
+///   Not `Indirect_Callvoid` to make use of the `void:` macro.
+/// </remarks>
 stock void:Indirect_Callvoid(func, tag, GLOBAL_TAG_TYPES:...)
 {
 	static
@@ -525,6 +570,7 @@ stock void:Indirect_Callvoid(func, tag, GLOBAL_TAG_TYPES:...)
 	// Don't return anything.
 }
 
+/// <library>indirection</library>
 stock Indirect_Array(func, tag, const params[], size = sizeof (params))
 {
 	static
@@ -646,6 +692,7 @@ stock Indirect_Array(func, tag, const params[], size = sizeof (params))
 }
 
 /*-------------------------------------------------------------------------*//**
+ * <library>indirection</library>
  * <param name="func">The function pointer with attached metadata.</param>
  * <remarks>
  *  Gets extra data from the pointer.
@@ -681,6 +728,7 @@ stock Indirect_GetMeta_(func)
 #define Indirect_GetMeta(%0) Indirect_GetMeta_(_:%0)
 
 /*-------------------------------------------------------------------------*//**
+ * <library>indirection</library>
  * <param name="func">The function pointer to attach metadata to.</param>
  * <param name="data">The metadata.</param>
  *//*------------------------------------------------------------------------**/
@@ -714,6 +762,7 @@ stock Indirect_SetMeta_(func, data)
 #define Indirect_SetMeta(%0) Indirect_SetMeta_(_:%0)
 
 /*-------------------------------------------------------------------------*//**
+ * <library>indirection</library>
  * <param name="func">The function pointer you want to use later.</param>
  * <remarks>
  *  If a function pointer is used within one function, that is not a problem.
@@ -758,6 +807,7 @@ stock Indirect_Claim_(func)
 #define Indirect_Claim(%0) Indirect_Claim_(_:%0)
 
 /*-------------------------------------------------------------------------*//**
+ * <library>indirection</library>
  * <param name="func">The function pointer you had previously stored.</param>
  * <remarks>
  *  If a function pointer is used within one function, that is not a problem.
@@ -803,6 +853,7 @@ stock Indirect_Release_(func)
 #define Indirect_Release(%0) Indirect_Release_(_:%0)
 
 /*-------------------------------------------------------------------------*//**
+ * <library>indirection</library>
  * <param name="id">The ID of the tag to get the specifiers from the name of.
  * </param>
  * <param name="dest">Where to store the name.</param>
@@ -823,6 +874,7 @@ stock Indirect_Tag(id, dest[32])
 }
 
 /*-------------------------------------------------------------------------*//**
+ * <library>indirection</library>
  * <param name="">The array to convert to an offset pointer.</param>
  * <remarks>
  *  Strings and arrays are passed relative to `COD` not `DAT` so they can be
@@ -842,6 +894,7 @@ stock Indirect_Ref_(...)
 #define Indirect_Ref(%0) Indirect_Ref_(_:(%0))
 
 /*-------------------------------------------------------------------------*//**
+ * <library>indirection</library>
  * <param name="">The array to convert to an offset pointer.</param>
  * <remarks>
  *  Strings and arrays are passed relative to `COD` not `DAT` so they can be
@@ -862,6 +915,7 @@ stock Indirect_Ptr_(ptr)
 #define Indirect_Ptr(%0) Indirect_Ptr_(_:(%0))
 
 /*-------------------------------------------------------------------------*//**
+ * <library>indirection</library>
  * <param name="">The array to convert to an offset pointer.</param>
  * <remarks>
  *  Strings and arrays are passed relative to `COD` not `DAT` so they can be
@@ -881,6 +935,7 @@ stock Indirect_DeRef_(...)
 #define Indirect_DeRef(%0) Indirect_DeRef_(_:(%0), sizeof (%0[]))
 
 /*-------------------------------------------------------------------------*//**
+ * <library>indirection</library>
  * <param name="">The array to convert to an offset pointer.</param>
  * <remarks>
  *  Strings and arrays are passed relative to `COD` not `DAT` so they can be
@@ -905,6 +960,7 @@ stock Indirect_DePtr_(ptr)
 #endif
 
 /*-------------------------------------------------------------------------*//**
+ * <library>indirection</library>
  * <remarks>
  *  A generic public wrapper for calling inline functions.
  * </remarks>
@@ -921,6 +977,7 @@ public Indirect_FromCallback(Func:cb<>, bool:release)
 }
 
 /*-------------------------------------------------------------------------*//**
+ * <library>indirection</library>
  * <remarks>
  *  Get the size of the COD AMX segment.
  * </remarks>
@@ -938,6 +995,7 @@ Indirect_Init()
 	}
 }
  
+/// <library>indirection</library>
 public OnJITCompile()
 {
 	Indirect_Init();
@@ -948,6 +1006,7 @@ public OnJITCompile()
 	#endif
 }
 
+/// <library>indirection</library>
 public OnFilterScriptInit()
 {
 	Indirect_Init();
@@ -957,6 +1016,7 @@ public OnFilterScriptInit()
 	return 1;
 }
 
+/// <library>indirection</library>
 public OnGameModeInit()
 {
 	Indirect_Init();
