@@ -27,7 +27,7 @@
  * <library
  *   name="indirection"
  *   summary="Function pointers and code redirection."
- *   license="(c) 2022, Alex "Y_Less" Cole, licensed under MPL 1.1"
+ *   license="Copyright (c) 2022 Alex &quot;Y_Less&quot; Cole.  Licensed under MPL 1.1"
  * >
  *   <remarks>
  *     Indirection is a system for calling function pointers in a generic and
