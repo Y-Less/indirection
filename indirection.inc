@@ -45,7 +45,7 @@
  * </library>
  */
 
-///
+/// <p/>
 
 #if !defined ADDRESSOF_INC
 	#tryinclude "..\amx\addressof"
