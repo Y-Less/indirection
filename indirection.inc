@@ -246,8 +246,10 @@ SPECIFIER(s);
 	
 	public __Indirect_FuncInc__()
 	{
-		memcpy("", "", 0, 0, 0);
-		funcidx("");
+		memcpy
+			("", "", 0, 0, 0);
+		funcidx
+			("");
 	}
 #endif
 
