@@ -242,7 +242,7 @@ MyCustomHandler(...)
 }
 ```
 
-All the parameters are the parameters the user gave to `@`, i.e. the parameters for the final function to be called.  For this reason there are two magic globals: `INDIRECTION_DATA` contains a pointer to the `E_INDIRECTION` data.  `INDIRECTION_TAG` contains the index of the function's tag, the string of the tag (which includes all the specifier characters) can be retrieved with `Indirect_Tag(id, dest[32])`.
+All the parameters are the parameters the user gave to `@`, i.e. the parameters for the final function to be called.  For this reason there are two magic globals: `INDIRECTION_DATA` contains a pointer to the `E_INDIRECTION` data.  `INDIRECTION_TAG` contains the index of the function's tag, the string of the tag (which includes all the specifier characters) can be retrieved with `Indirect_Tag(id, dest[64])`.
 
 ## Testing
 

@@ -331,7 +331,7 @@ stock Indirect_Call(func, tag, GLOBAL_TAG_TYPES:...)
 	{
 		static
 			i = 0,
-			lTag[32];
+			lTag[64];
 		// Skip the `F@_@` prefix.
 		GetTagNameFromID(INDIRECTION_TAG, lTag);
 		if (lTag[0]) for (i = 4; ; )
@@ -444,7 +444,7 @@ stock string:Indirect_Callstring(func, tag, GLOBAL_TAG_TYPES:...)
 	{
 		static
 			i = 0,
-			lTag[32];
+			lTag[64];
 		// Skip the `F@_@` prefix.
 		GetTagNameFromID(INDIRECTION_TAG, lTag);
 		if (lTag[0]) for (i = 4; ; )
@@ -551,7 +551,7 @@ stock void:Indirect_Callvoid(func, tag, GLOBAL_TAG_TYPES:...)
 	{
 		static
 			i = 0,
-			lTag[32];
+			lTag[64];
 		// Skip the `F@_@` prefix.
 		GetTagNameFromID(INDIRECTION_TAG, lTag);
 		if (lTag[0]) for (i = 4; ; )
@@ -672,7 +672,7 @@ stock Indirect_Array(func, tag, const params[], size = sizeof (params))
 	{
 		static
 			i = 0,
-			lTag[32];
+			lTag[64];
 		// Skip the `F@_@` prefix.
 		GetTagNameFromID(INDIRECTION_TAG, lTag);
 		if (lTag[0]) for (i = 4; ; )
@@ -874,7 +874,7 @@ stock Indirect_Release_(func)
 stock Indirect_Tag(id, dest[32])
 {
 	static
-		lTag[32];
+		lTag[64];
 	GetTagNameFromID(id, lTag),
 	dest[0] = '\0';
 	if (lTag[0])
