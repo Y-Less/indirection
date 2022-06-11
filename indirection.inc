@@ -48,22 +48,22 @@
 /// <p/>
 
 #if !defined ADDRESSOF_INC
-	#tryinclude "..\amx\addressof"
+	#tryinclude "..\amx\addressof.inc"
 #endif
 #if !defined ADDRESSOF_INC
-	#tryinclude <amx_assembly\addressof>
+	#tryinclude <amx_assembly\addressof.inc>
 #endif
 #if !defined ADDRESSOF_INC
-	#tryinclude "..\amx_assembly\addressof"
+	#tryinclude "..\amx_assembly\addressof.inc"
 #endif
 #if !defined ADDRESSOF_INC
-	#tryinclude "..\..\amx_assembly\addressof"
+	#tryinclude "..\..\amx_assembly\addressof.inc"
 #endif
 #if !defined ADDRESSOF_INC
-	#tryinclude "addressof"
+	#tryinclude "addressof.inc"
 #endif
 #if !defined ADDRESSOF_INC
-	#tryinclude <addressof>
+	#tryinclude <addressof.inc>
 #endif
 #if !defined ADDRESSOF_INC
 	#define AMX_INCLUDING_FAILED
@@ -73,44 +73,44 @@
 #endif
 
 #if !defined ADDRESSOF_JIT_INC
-	#tryinclude "..\amx\addressof_jit"
+	#tryinclude "..\amx\addressof_jit.inc"
 #endif
 #if !defined ADDRESSOF_JIT_INC
-	#tryinclude <amx_assembly\addressof_jit>
+	#tryinclude <amx_assembly\addressof_jit.inc>
 #endif
 #if !defined ADDRESSOF_JIT_INC
-	#tryinclude "..\amx_assembly\addressof_jit"
+	#tryinclude "..\amx_assembly\addressof_jit.inc"
 #endif
 #if !defined ADDRESSOF_JIT_INC
-	#tryinclude "..\..\amx_assembly\addressof_jit"
+	#tryinclude "..\..\amx_assembly\addressof_jit.inc"
 #endif
 #if !defined ADDRESSOF_JIT_INC
-	#tryinclude "addressof_jit"
+	#tryinclude "addressof_jit.inc"
 #endif
 #if !defined ADDRESSOF_JIT_INC
-	#tryinclude <addressof_jit>
+	#tryinclude <addressof_jit.inc>
 #endif
 #if !defined ADDRESSOF_JIT_INC
 	#define AMX_INCLUDING_FAILED
 #endif
 
 #if !defined AMX_HEADER_INC
-	#tryinclude "..\amx\amx_header"
+	#tryinclude "..\amx\amx_header.inc"
 #endif
 #if !defined AMX_HEADER_INC
-	#tryinclude <amx_assembly\amx_header>
+	#tryinclude <amx_assembly\amx_header.inc>
 #endif
 #if !defined AMX_HEADER_INC
-	#tryinclude "..\amx_assembly\amx_header"
+	#tryinclude "..\amx_assembly\amx_header.inc"
 #endif
 #if !defined AMX_HEADER_INC
-	#tryinclude "..\..\amx_assembly\amx_header"
+	#tryinclude "..\..\amx_assembly\amx_header.inc"
 #endif
 #if !defined AMX_HEADER_INC
-	#tryinclude "amx_header"
+	#tryinclude "amx_header.inc"
 #endif
 #if !defined AMX_HEADER_INC
-	#tryinclude <amx_header>
+	#tryinclude <amx_header.inc>
 #endif
 #if !defined AMX_HEADER_INC
 	#define AMX_INCLUDING_FAILED
