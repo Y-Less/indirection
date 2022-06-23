@@ -8,7 +8,7 @@
 		"Zeex/amx_assembly"
 	],
 	"dev_dependencies": [
-		"Misiur/YSI-Includes",
+		"pawn-lang/YSI-Includes",
 		"Zeex/samp-plugin-crashdetect"
 	],
 	"builds": [
