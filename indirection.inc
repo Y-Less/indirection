@@ -278,7 +278,7 @@ stock Indirect_Call(func, tag, GLOBAL_TAG_TYPES:...)
 	// Get the parameter count.
 	#emit POP.pri
 	// Reduce the parameter count.
-	#emit ADD.C        0xFFFFFFF8
+	#emit ADD.C        AMX_MINUS_8
 	// Store the return address.
 	#emit SWAP.alt
 	#emit STOR.alt     INDIRECTION_DATA
@@ -391,7 +391,7 @@ stock string:Indirect_Callstring(func, tag, GLOBAL_TAG_TYPES:...)
 	// Get the parameter count.
 	#emit POP.pri
 	// Reduce the parameter count.
-	#emit ADD.C        0xFFFFFFF8
+	#emit ADD.C        AMX_MINUS_8
 	// Store the return address.
 	#emit SWAP.alt
 	#emit STOR.alt     INDIRECTION_DATA
@@ -498,7 +498,7 @@ stock void:Indirect_Callvoid(func, tag, GLOBAL_TAG_TYPES:...)
 	// Get the parameter count.
 	#emit POP.pri
 	// Reduce the parameter count.
-	#emit ADD.C        0xFFFFFFF8
+	#emit ADD.C        AMX_MINUS_8
 	// Store the return address.
 	#emit SWAP.alt
 	#emit STOR.alt     INDIRECTION_DATA
