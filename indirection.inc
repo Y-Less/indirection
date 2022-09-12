@@ -269,7 +269,8 @@ stock Indirect_Call(func, tag, GLOBAL_TAG_TYPES:...)
 	// 
 	// Get the previous frame.  This undoes the effects of our `PROC` so the
 	// called function must have a proper `PROC`.
-	#emit ADDR.pri     20
+	const cells0 = 5 * cellbytes;
+	#emit ADDR.pri     cells0
 	#emit STOR.pri     addr
 	#emit POP.pri
 	#emit SCTRL        5
@@ -278,7 +279,8 @@ stock Indirect_Call(func, tag, GLOBAL_TAG_TYPES:...)
 	// Get the parameter count.
 	#emit POP.pri
 	// Reduce the parameter count.
-	#emit ADD.C        AMX_MINUS_8
+	const cells1 = -2 * cellbytes;
+	#emit ADD.C        cells1
 	// Store the return address.
 	#emit SWAP.alt
 	#emit STOR.alt     INDIRECTION_DATA
@@ -302,7 +304,8 @@ stock Indirect_Call(func, tag, GLOBAL_TAG_TYPES:...)
 		if (!INDIRECTION_DATA)
 		{
 			// Get the function at `func - COD + 4`.
-			#emit CONST.pri    4
+			const cells2 = 1 * cellbytes;
+			#emit CONST.pri    cells2
 			#emit ADD
 			#emit LOAD.I
 			// Call it, passing `func` as a proper pointer, NOT skipping `PROC`.
@@ -314,9 +317,11 @@ stock Indirect_Call(func, tag, GLOBAL_TAG_TYPES:...)
 		// `INDIRECTION_DATA` is now a pointer to a string of a function name.
 		// Resolve it via index lookup.
 		#emit PUSH.alt
-		#emit PUSH.C       4
+		const cells3 = 1 * cellbytes;
+		#emit PUSH.C       cells3
 		#emit SYSREQ.C     funcidx
-		#emit STACK        8
+		const cells4 = 2 * cellbytes;
+		#emit STACK        cells4
 		#emit STOR.pri     INDIRECTION_DATA
 		if (INDIRECTION_DATA == -1)
 		{
@@ -348,7 +353,7 @@ stock Indirect_Call(func, tag, GLOBAL_TAG_TYPES:...)
 			case '\0', 'x':
 				break;
 			}
-			addr += 4;
+			addr += cellbytes;
 		}
 	}
 	{}
@@ -370,8 +375,10 @@ stock string:Indirect_Callstring(func, tag, GLOBAL_TAG_TYPES:...)
 	if (!func)
 	{
 		// Get the offset to the secret return parameter.
-		#emit LOAD.S.pri   8
-		#emit ADDR.alt     12
+		const cells0 = 2 * cellbytes;
+		#emit LOAD.S.pri   cells0
+		const cells1 = 3 * cellbytes;
+		#emit ADDR.alt     cells1
 		#emit ADD
 		#emit LOAD.I
 		#emit MOVE.alt
@@ -382,7 +389,8 @@ stock string:Indirect_Callstring(func, tag, GLOBAL_TAG_TYPES:...)
 		return ret;
 	}
 	{}
-	#emit ADDR.pri     20
+	const cells2 = 5 * cellbytes;
+	#emit ADDR.pri     cells2
 	#emit STOR.pri     addr
 	#emit POP.pri
 	#emit SCTRL        5
@@ -391,7 +399,8 @@ stock string:Indirect_Callstring(func, tag, GLOBAL_TAG_TYPES:...)
 	// Get the parameter count.
 	#emit POP.pri
 	// Reduce the parameter count.
-	#emit ADD.C        AMX_MINUS_8
+	const cells3 = -2 * cellbytes;
+	#emit ADD.C        cells3
 	// Store the return address.
 	#emit SWAP.alt
 	#emit STOR.alt     INDIRECTION_DATA
@@ -415,7 +424,8 @@ stock string:Indirect_Callstring(func, tag, GLOBAL_TAG_TYPES:...)
 		if (!INDIRECTION_DATA)
 		{
 			// Get the function at `func - COD + 4`.
-			#emit CONST.pri    4
+			const cells4 = 1 * cellbytes;
+			#emit CONST.pri    cells4
 			#emit ADD
 			#emit LOAD.I
 			// Call it, passing `func` as a proper pointer, NOT skipping `PROC`.
@@ -427,9 +437,11 @@ stock string:Indirect_Callstring(func, tag, GLOBAL_TAG_TYPES:...)
 		// `INDIRECTION_DATA` is now a pointer to a string of a function name.
 		// Resolve it via index lookup.
 		#emit PUSH.alt
-		#emit PUSH.C       4
+		const cells5 = 1 * cellbytes;
+		#emit PUSH.C       cells5
 		#emit SYSREQ.C     funcidx
-		#emit STACK        8
+		const cells6 = 2 * cellbytes;
+		#emit STACK        cells6
 		#emit STOR.pri     INDIRECTION_DATA
 		if (INDIRECTION_DATA == -1)
 		{
@@ -461,7 +473,7 @@ stock string:Indirect_Callstring(func, tag, GLOBAL_TAG_TYPES:...)
 			case '\0', 'x':
 				break;
 			}
-			addr += 4;
+			addr += cellbytes;
 		}
 	}
 	{}
@@ -489,7 +501,8 @@ stock void:Indirect_Callvoid(func, tag, GLOBAL_TAG_TYPES:...)
 		return;
 	}
 	{}
-	#emit ADDR.pri     20
+	const cells0 = 5 * cellbytes;
+	#emit ADDR.pri     cells0
 	#emit STOR.pri     addr
 	#emit POP.pri
 	#emit SCTRL        5
@@ -498,7 +511,8 @@ stock void:Indirect_Callvoid(func, tag, GLOBAL_TAG_TYPES:...)
 	// Get the parameter count.
 	#emit POP.pri
 	// Reduce the parameter count.
-	#emit ADD.C        AMX_MINUS_8
+	const cells1 = -2 * cellbytes;
+	#emit ADD.C        cells1
 	// Store the return address.
 	#emit SWAP.alt
 	#emit STOR.alt     INDIRECTION_DATA
@@ -522,7 +536,8 @@ stock void:Indirect_Callvoid(func, tag, GLOBAL_TAG_TYPES:...)
 		if (!INDIRECTION_DATA)
 		{
 			// Get the function at `func - COD + 4`.
-			#emit CONST.pri    4
+			const cells2 = 1 * cellbytes;
+			#emit CONST.pri    cells2
 			#emit ADD
 			#emit LOAD.I
 			// Call it, passing `func` as a proper pointer, NOT skipping `PROC`.
@@ -534,9 +549,11 @@ stock void:Indirect_Callvoid(func, tag, GLOBAL_TAG_TYPES:...)
 		// `INDIRECTION_DATA` is now a pointer to a string of a function name.
 		// Resolve it via index lookup.
 		#emit PUSH.alt
-		#emit PUSH.C       4
+		const cells3 = 1 * cellbytes;
+		#emit PUSH.C       cells3
 		#emit SYSREQ.C     funcidx
-		#emit STACK        8
+		const cells4 = 2 * cellbytes;
+		#emit STACK        cells4
 		#emit STOR.pri     INDIRECTION_DATA
 		if (INDIRECTION_DATA == -1)
 		{
@@ -568,7 +585,7 @@ stock void:Indirect_Callvoid(func, tag, GLOBAL_TAG_TYPES:...)
 			case '\0', 'x':
 				break;
 			}
-			addr += 4;
+			addr += cellbytes;
 		}
 	}
 	{}
@@ -605,7 +622,14 @@ stock Indirect_Array(func, tag, const params[], size = sizeof (params))
 	#emit STOR.alt     src
 	// Get the size.
 	#emit POP.alt
-	#emit SHL.C.alt    2
+	#if cellbits == 32
+		const cells0 = 2;
+	#elseif cellbits == 64
+		const cells0 = 3;
+	#else
+		#error Unsupported `cellbits`.
+	#endif
+	#emit SHL.C.alt    cells0
 //	#emit STOR.alt     cnt
 	// We cannot just adjust the stack size while the other parameters are still
 	// on it, since the new stack might be smaller than the old one, and dealing
@@ -620,10 +644,12 @@ stock Indirect_Array(func, tag, const params[], size = sizeof (params))
 	#emit PUSH         src
 	#emit STOR.pri     src
 	#emit PUSH.pri
-	#emit PUSH.C       20
+	const cells1 = 5 * cellbytes;
+	#emit PUSH.C       cells1
 	#emit SYSREQ.C     memcpy
 	#emit MOVE.pri
-	#emit STACK        24
+	const cells2 = 6 * cellbytes;
+	#emit STACK        cells2
 	#emit PUSH.pri
 	#emit PUSH         ret
 	// 
@@ -644,7 +670,8 @@ stock Indirect_Array(func, tag, const params[], size = sizeof (params))
 			#emit STOR.alt     INDIRECTION_DATA
 			// Get the function at `func - COD + 4`.
 			#emit LOAD.pri     INDIRECTION_DATA
-			#emit ADD.C        4
+			const cells3 = 1 * cellbytes;
+			#emit ADD.C        cells3
 			#emit LOAD.I
 			// Call it, passing `func` as a proper pointer, NOT skipping `PROC`.
 			#emit SCTRL        6
@@ -654,9 +681,11 @@ stock Indirect_Array(func, tag, const params[], size = sizeof (params))
 		// `INDIRECTION_DATA` is now a pointer to a string of a function name.
 		// Resolve it via index lookup.
 		#emit PUSH.alt
-		#emit PUSH.C       4
+		const cells4 = 1 * cellbytes;
+		#emit PUSH.C       cells4
 		#emit SYSREQ.C     funcidx
-		#emit STACK        8
+		const cells5 = 2 * cellbytes;
+		#emit STACK        cells5
 		#emit STOR.pri     INDIRECTION_DATA
 		if (INDIRECTION_DATA == -1)
 		{
@@ -689,7 +718,7 @@ stock Indirect_Array(func, tag, const params[], size = sizeof (params))
 			case '\0', 'x':
 				break;
 			}
-			src += 4;
+			src += cellbytes;
 		}
 	}
 	{}
@@ -726,7 +755,8 @@ stock Indirect_GetMeta_(func)
 		{}
 		// I'm relying on `alt` not changing here...
 		// Get the function at `func - COD + 16`.
-		#emit CONST.pri    16
+		const cells0 = 4 * cellbytes;
+		#emit CONST.pri    cells0
 		#emit ADD
 		#emit LOAD.I
 		#emit RETN
@@ -760,7 +790,8 @@ stock Indirect_SetMeta_(func, data)
 		{}
 		// I'm relying on `alt` not changing here...
 		// Get the function at `func - COD + 16`.
-		#emit CONST.pri    16
+		const cells0 = 4 * cellbytes;
+		#emit CONST.pri    cells0
 		#emit ADD
 		#emit LOAD.S.alt   data
 		#emit XCHG
@@ -852,7 +883,8 @@ stock Indirect_Release_(func)
 		#emit POP.pri
 		#emit SCTRL        5
 		// Get the function at `func - COD + 12`.
-		#emit CONST.pri    12
+		const cells0 = 3 * cellbytes;
+		#emit CONST.pri    cells0
 		#emit ADD
 		#emit LOAD.I
 		#emit SCTRL        6
@@ -893,7 +925,8 @@ stock Indirect_Tag(id, dest[32])
 stock Indirect_Ref_(...)
 {
 	assert(numargs() == 1);
-	#emit LOAD.S.pri       12
+	const cells0 = 3 * cellbytes;
+	#emit LOAD.S.pri       cells0
 	#emit LOAD.alt         gsCodSize
 	#emit ADD
 	#emit RETN
@@ -914,7 +947,8 @@ stock Indirect_Ptr_(ptr)
 {
 	#pragma unused ptr
 	assert(numargs() == 1);
-	#emit LOAD.S.pri       12
+	const cells0 = 3 * cellbytes;
+	#emit LOAD.S.pri       cells0
 	#emit LOAD.alt         gsCodSize
 	#emit ADD
 	#emit RETN
@@ -934,7 +968,8 @@ stock Indirect_Ptr_(ptr)
 stock Indirect_DeRef_(...)
 {
 	assert(numargs() == 1);
-	#emit LOAD.S.pri       12
+	const cells0 = 3 * cellbytes;
+	#emit LOAD.S.pri       cells0
 	#emit LOAD.alt         gsCodSize
 	#emit SUB
 	#emit RETN
@@ -955,7 +990,8 @@ stock Indirect_DePtr_(ptr)
 {
 	#pragma unused ptr
 	assert(numargs() == 1);
-	#emit LOAD.S.pri       12
+	const cells0 = 3 * cellbytes;
+	#emit LOAD.S.pri       cells0
 	#emit LOAD.alt         gsCodSize
 	#emit SUB
 	#emit RETN
