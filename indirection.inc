@@ -1100,3 +1100,31 @@ public OnGameModeInit()
 #endif
 #define OnGameModeInit(%0) Indirection_OnGameModeInit(%0)
 
+#endinput
+
+// V2 design, with meta-data on `@`:
+//
+//     @(meta, data).func(yeah);
+//
+
+// This is duplicated because of macro reasons (so we can have a macro fail to
+// match and still work as code).
+native String:YSI_str_new_static__(const str[], str_create_mode:mode = str_create_mode:0, size = sizeof (str)) = str_new_static;
+#define str_new_static%2.%0(%1) YSI_str_new_static__ INDIR2_$%0(%1)%2()()$(%2)
+
+// First separate out calls that just look slightly correct, horrible code like:
+//
+//     str_new_static("Hello") + Other() + 0.5 / Third()
+//
+// Uses `YSI_str_new_static__` as an alias for `str_new_static`.  This is
+// horrible because the `()`s and `.` in the following code make this look an
+// awful lot like `@(meta).func(params)`;
+#define YSI_str_new_static__%9$%0(%1)(%2)()%9$(%9) (Indirect_Call(Indirect_Meta(%2),_:%0,_:(tagof(%0)),%1))
+#define INDIR2_$%0(%1)%9$(%2) %2.%0(%1)
+
+// Now we know this is an indirection call, are there any meta-data params?
+#define Indirect_Call(%2,_:%9&%0,_:(tagof(%9)),%3) Indirect_Call(%2,_:TAGOF_ADDRESSOF:addressof(%0),_:0,%3)
+#define TAGOF_ADDRESSOF:addressof(%0<%2>),_:0, addressof(%0<%2>),_:tagof(F@_@%2:),
+
+#define Indirect_Meta() 0
+
