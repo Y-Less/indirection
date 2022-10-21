@@ -242,11 +242,9 @@ SPECIFIER(s);
 native String:YSI_str_new_static__(const str[], str_create_mode:mode = str_create_mode:0, size = sizeof (str)) = str_new_static;
 #define str_new_static%2.%0(%1) YSI_str_new_static__ INDIR2_$%0(%1)%2()()$(%2)
 
-stock Indirect_Meta(func, tag, GLOBAL_TAG_TYPES:...)
+stock Indirect_Meta(GLOBAL_TAG_TYPES:...)
 {
-	INDIRECTION_DATA = func;
-	INDIRECTION_TAG = tag;
-	return numargs() - 2;
+	return numargs();
 }
 
 // First separate out calls that just look slightly correct, horrible code like:
@@ -256,12 +254,12 @@ stock Indirect_Meta(func, tag, GLOBAL_TAG_TYPES:...)
 // Uses `YSI_str_new_static__` as an alias for `str_new_static`.  This is
 // horrible because the `()`s and `.` in the following code make this look an
 // awful lot like `@(meta).func(params)`;
-#define YSI_str_new_static__%9$%0(%1)(%2)()%9$(%9) (Indirect_Call__(_:Indirect_Meta(_:%0,_:(tagof(%0)),%2),%1))
+#define YSI_str_new_static__%9$%0(%1)(%2)()%9$(%9) (Indirect_Call__(_:(INDIRECTION_DATA=_:%0,INDIRECTION_TAG=tagof(%0),Indirect_Meta(%2)),%1))
 #define INDIR2_$%0(%1)%9$(%2) %2.%0(%1)
 
 // Now we know this is an indirection call, are there any meta-data params?
-#define Indirect_Call__(_:Indirect_Meta(_:%9&%0,_:(tagof(%9)),%2),%3) Indirect_Call__(_:Indirect_Meta(_:TAGOF_ADDRESSOF:addressof(%0),_:0,%2),%3)
-#define TAGOF_ADDRESSOF:addressof(%0<%2>),_:0, addressof(%0<%2>),_:tagof(F@_@%2:),
+#define Indirect_Call__(_:(INDIRECTION_DATA=_:%9&%0,INDIRECTION_TAG=tagof(%9),Indirect_Meta(%2)),%3) Indirect_Call__(_:(INDIRECTION_DATA=_:TAGOF_ADDRESSOF:addressof(%0),INDIRECTION_TAG=0,Indirect_Meta(%2)),%3)
+#define TAGOF_ADDRESSOF:addressof(%0<%2>),INDIRECTION_TAG=0, addressof(%0<%2>),INDIRECTION_TAG=tagof(F@_@%2:),
 
 // Can now do:
 //   
@@ -286,8 +284,8 @@ stock Indirect_Meta(func, tag, GLOBAL_TAG_TYPES:...)
 forward Indirect_Call(func, tag, GLOBAL_TAG_TYPES:...);
 
 // Old API.
-#define Indirect_Call(%0,%1) Indirect_Call__(_:INDIR1_:Indirect_Meta(%0,%1))
-#define INDIR1_:Indirect_Meta(%0,%1,%2)) Indirect_Meta(%0,%1),%2)
+#define Indirect_Call(%0,%1) (Indirect_Call__(_:INDIR1_:(INDIRECTION_DATA=(%0),INDIRECTION_TAG=(%1),Indirect_Meta())))
+#define INDIR1_:(INDIRECTION_DATA=(%0),INDIRECTION_TAG=(%1,%2),Indirect_Meta())) (INDIRECTION_DATA=(%0),INDIRECTION_TAG=(%1),Indirect_Meta()),%2)
 
 /// <library>indirection</library>
 stock Indirect_Call__(meta, GLOBAL_TAG_TYPES:...)
