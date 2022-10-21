@@ -284,8 +284,8 @@ stock Indirect_Meta(GLOBAL_TAG_TYPES:...)
 forward Indirect_Call(func, tag, GLOBAL_TAG_TYPES:...);
 
 // Old API.
-#define Indirect_Call(%0,%1) (Indirect_Call__(_:INDIR1_:(INDIRECTION_DATA=(%0),INDIRECTION_TAG=(%1),Indirect_Meta())))
-#define INDIR1_:(INDIRECTION_DATA=(%0),INDIRECTION_TAG=(%1,%2),Indirect_Meta())) (INDIRECTION_DATA=(%0),INDIRECTION_TAG=(%1),Indirect_Meta()),%2)
+#define Indirect_Call(%0,%1) (Indirect_Call__(_:INDIR1_:(INDIRECTION_DATA=(%0),INDIRECTION_TAG=(%1),0)))
+#define INDIR1_:(INDIRECTION_DATA=(%0),INDIRECTION_TAG=(%1,%2),0)) (INDIRECTION_DATA=(%0),INDIRECTION_TAG=(%1),0),%2)
 
 /// <library>indirection</library>
 stock Indirect_Call__(meta, GLOBAL_TAG_TYPES:...)
