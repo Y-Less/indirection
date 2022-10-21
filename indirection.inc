@@ -231,13 +231,42 @@ SPECIFIER(s);
 // It would save the stack manipulation though (not convinced it would be less
 // code though with the generation of multiple function calls).
 #define @ str_new_static
-#define str_new_static.%0(%1) (Indirect_Call(_:%0,_:(tagof(%0)),%1))
-#define Indirect_Call(_:%9&%0,_:(tagof(%9)),%2) Indirect_Call(_:TAGOF_ADDRESSOF:addressof(%0),_:0,%2)
+
+// V2 design, with meta-data on `@`:
+//
+//     @(meta, data).func(yeah);
+//
+
+// This is duplicated because of macro reasons (so we can have a macro fail to
+// match and still work as code).
+native String:YSI_str_new_static__(const str[], str_create_mode:mode = str_create_mode:0, size = sizeof (str)) = str_new_static;
+#define str_new_static%2.%0(%1) YSI_str_new_static__ INDIR2_$%0(%1)%2()()$(%2)
+
+stock Indirect_Meta(func, tag, GLOBAL_TAG_TYPES:...)
+{
+	INDIRECTION_DATA = func;
+	INDIRECTION_TAG = tag;
+	return numargs() - 2;
+}
+
+// First separate out calls that just look slightly correct, horrible code like:
+//
+//     str_new_static("Hello") + Other() + 0.5 / Third()
+//
+// Uses `YSI_str_new_static__` as an alias for `str_new_static`.  This is
+// horrible because the `()`s and `.` in the following code make this look an
+// awful lot like `@(meta).func(params)`;
+#define YSI_str_new_static__%9$%0(%1)(%2)()%9$(%9) (Indirect_Call__(_:Indirect_Meta(_:%0,_:(tagof(%0)),%2),%1))
+#define INDIR2_$%0(%1)%9$(%2) %2.%0(%1)
+
+// Now we know this is an indirection call, are there any meta-data params?
+#define Indirect_Call__(_:Indirect_Meta(_:%9&%0,_:(tagof(%9)),%2),%3) Indirect_Call__(_:Indirect_Meta(_:TAGOF_ADDRESSOF:addressof(%0),_:0,%2),%3)
 #define TAGOF_ADDRESSOF:addressof(%0<%2>),_:0, addressof(%0<%2>),_:tagof(F@_@%2:),
+
 // Can now do:
 //   
 //   @.var(params)
-//   @&func<iis>(params)
+//   @.&func<iis>(params)
 //   @.&func(params)
 //   
 
@@ -254,17 +283,24 @@ SPECIFIER(s);
 #endif
 
 /// <library>indirection</library>
-stock Indirect_Call(func, tag, GLOBAL_TAG_TYPES:...)
+forward Indirect_Call(func, tag, GLOBAL_TAG_TYPES:...);
+
+// Old API.
+#define Indirect_Call(%0,%1) Indirect_Call__(_:INDIR1_:Indirect_Meta(%0,%1))
+#define INDIR1_:Indirect_Meta(%0,%1,%2)) Indirect_Meta(%0,%1),%2)
+
+/// <library>indirection</library>
+stock Indirect_Call__(meta, GLOBAL_TAG_TYPES:...)
 {
-	const cells0 = 5 * cellbytes;
-	const cells1 = -2 * cellbytes;
+	const cells0 = 4 * cellbytes;
+	const cells1 = -1 * cellbytes;
 	const cells2 = 1 * cellbytes;
 	const cells3 = 1 * cellbytes;
 	const cells4 = 2 * cellbytes;
 	static
 		addr = 0;
-	#pragma unused tag
-	if (!func)
+	#pragma unused meta
+	if (!INDIRECTION_DATA)
 	{
 		return 0;
 	}
@@ -284,13 +320,9 @@ stock Indirect_Call(func, tag, GLOBAL_TAG_TYPES:...)
 	#emit POP.pri
 	// Reduce the parameter count.
 	#emit ADD.C        cells1
-	// Store the return address.
-	#emit SWAP.alt
-	#emit STOR.alt     INDIRECTION_DATA
-	#emit POP.alt
 	// Store the new parameter count.
 	#emit SWAP.pri
-	#emit STOR.pri     INDIRECTION_TAG
+	// Store the return address.
 	#emit PUSH.alt
 	// Check the pointer type.  If it is in the `COD` area, jump straight to it
 	// with the tag for parameter types (if it isn't 0).  Otherwise, use the
@@ -1099,32 +1131,4 @@ public OnGameModeInit()
 	#define _ALS_OnGameModeInit
 #endif
 #define OnGameModeInit(%0) Indirection_OnGameModeInit(%0)
-
-#endinput
-
-// V2 design, with meta-data on `@`:
-//
-//     @(meta, data).func(yeah);
-//
-
-// This is duplicated because of macro reasons (so we can have a macro fail to
-// match and still work as code).
-native String:YSI_str_new_static__(const str[], str_create_mode:mode = str_create_mode:0, size = sizeof (str)) = str_new_static;
-#define str_new_static%2.%0(%1) YSI_str_new_static__ INDIR2_$%0(%1)%2()()$(%2)
-
-// First separate out calls that just look slightly correct, horrible code like:
-//
-//     str_new_static("Hello") + Other() + 0.5 / Third()
-//
-// Uses `YSI_str_new_static__` as an alias for `str_new_static`.  This is
-// horrible because the `()`s and `.` in the following code make this look an
-// awful lot like `@(meta).func(params)`;
-#define YSI_str_new_static__%9$%0(%1)(%2)()%9$(%9) (Indirect_Call(Indirect_Meta(%2),_:%0,_:(tagof(%0)),%1))
-#define INDIR2_$%0(%1)%9$(%2) %2.%0(%1)
-
-// Now we know this is an indirection call, are there any meta-data params?
-#define Indirect_Call(%2,_:%9&%0,_:(tagof(%9)),%3) Indirect_Call(%2,_:TAGOF_ADDRESSOF:addressof(%0),_:0,%3)
-#define TAGOF_ADDRESSOF:addressof(%0<%2>),_:0, addressof(%0<%2>),_:tagof(F@_@%2:),
-
-#define Indirect_Meta() 0
 
