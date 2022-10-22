@@ -253,16 +253,14 @@ SPECIFIER(s);
 // code though with the generation of multiple function calls).
 #define @ str_new_static
 
-// V2 design, with meta-data on `@`:
-//
-//     @(meta, data).func(yeah);
-//
-
-// This is duplicated because of macro reasons (so we can have a macro fail to
-// match and still work as code).
-/// <library>indirection</library>
-native String:YSI_str_new_static__(const str[], str_create_mode:mode = str_create_mode:0, size = sizeof (str)) = str_new_static;
-#define str_new_static%2.%0(%1) YSI_str_new_static__ INDIR2_$%0(%1)%2()()$(%2)
+// V2 design, with meta-data on `@`.  Can now do:
+//   
+//   @.var(params)
+//   @.&func<iis>(params)
+//   @.&func(params)
+//   @.func[meta](params)
+//   
+#define str_new_static.%0(%1) (Indirect_Call__(_:(INDIRECTION_DATA=_:INDIR3_:%0,INDIRECTION_TAG=tagof(%0),Indirect_Meta()),%1))
 
 /// <library>indirection</library>
 native Indirect_Memcpy(dest[], source, index = 0, numbytes, maxlength = sizeof (dest)) = memcpy;
@@ -282,25 +280,46 @@ stock Indirect_Meta(GLOBAL_TAG_TYPES:...)
 	return (INDIRECTION_COUNT /= cellbytes);
 }
 
-// First separate out calls that just look slightly correct, horrible code like:
-//
-//     str_new_static("Hello") + Other() + 0.5 / Third()
-//
-// Uses `YSI_str_new_static__` as an alias for `str_new_static`.  This is
-// horrible because the `()`s and `.` in the following code make this look an
-// awful lot like `@(meta).func(params)`;
-#define YSI_str_new_static__%9$%0(%1)(%2)()%9$(%9) (Indirect_Call__(_:(INDIRECTION_DATA=_:%0,INDIRECTION_TAG=tagof(%0),Indirect_Meta(%2)),%1))
-#define INDIR2_$%0(%1)%9$(%2) %2.%0(%1)
+// Look for `&` for variable dereferencing.
+#define INDIRECTION_DATA=_:%9&%0,INDIRECTION_TAG=tagof(%9), INDIRECTION_DATA=_:INDIR2_:addressof(%0),INDIRECTION_TAG=0,
 
 // Now we know this is an indirection call, are there any meta-data params?
-#define Indirect_Call__(_:(INDIRECTION_DATA=_:%9&%0,INDIRECTION_TAG=tagof(%9),Indirect_Meta(%2)),%3) Indirect_Call__(_:(INDIRECTION_DATA=_:TAGOF_ADDRESSOF:addressof(%0),INDIRECTION_TAG=0,Indirect_Meta(%2)),%3)
-#define TAGOF_ADDRESSOF:addressof(%0<%2>),INDIRECTION_TAG=0, addressof(%0<%2>),INDIRECTION_TAG=tagof(F@_@%2:),
+#define Indirect_Call__(_:(INDIRECTION_DATA=_:%0[%2],INDIRECTION_TAG=tagof(%9),Indirect_Meta()),%3) Indirect_Call__(_:(INDIRECTION_DATA=_:%0,INDIRECTION_TAG=tagof(%9),Indirect_Meta(%2)),%3)
+
+// Look for `<>` generic tag types.
+#define INDIR2_:addressof(%0<%4>),INDIRECTION_TAG=0, addressof(%0<%4>),INDIRECTION_TAG=tagof(F@_@%4:),
+
+// The `ALS_DO` callback syntax is `CALLBACK<name, specifier>(params)`
+#define Indirect_DoCallback<%1,%0>(%9) Indirect_CB__("On"#%1),INDIRECTION_TAG=tagof(F@_@%0:),
+
+// Simplify the complex ALS syntax.
+#define Indirect_ALS<%0><%1> %1<,%0>()
+// Example:
+//
+//   #define ALS_DO_PlayerConnect Indirect_ALSTag<i>
+//
+
+// Special case for functions starting with `On`.
+#define INDIR3_:On%0,INDIRECTION_TAG=tagof(%0), ALS_DO%0<Indirect_DoCallback>
+
+/// <library>indirection</library>
+stock Indirect_CB__(const callback[])
+{
+	// Return the address of the string relative to `COD`, which is the odd
+	// format that `Indirect_Call__` wants it in.
+	#emit LOAD.S.pri   callback
+	#emit LOAD.alt     gsCodSize
+	#emit ADD
+	#emit RETN
+	return 0;
+}
 
 // Can now do:
 //   
 //   @.var(params)
 //   @.&func<iis>(params)
-//   @.&func(params)
+//   @.func[meta](params)
+//   @.OnPlayerConnect(params)
 //   
 
 /// <library>indirection</library>
