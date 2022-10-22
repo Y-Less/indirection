@@ -308,9 +308,6 @@ stock Indirect_Meta(GLOBAL_TAG_TYPES:...)
 stock Indirect_CB__(const callback[])
 {
 	// Return the address of a public by name.
-	printf("callback = %s", callback);
-	printf("callback = %d", funcidx(callback));
-	printf("callback = %d", GetPublicAddressFromIndex(funcidx(callback)));
 	return GetPublicAddressFromIndex(funcidx(callback));
 }
 
@@ -342,9 +339,6 @@ stock Indirect_Call__(meta, GLOBAL_TAG_TYPES:...)
 	static
 		addr = 0;
 	#pragma unused meta
-	
-	printf("INDIRECTION_DATA = %d", INDIRECTION_DATA);
-	printf("INDIRECTION_TAG = %d", INDIRECTION_TAG);
 	if (!INDIRECTION_DATA)
 	{
 		return 0;
@@ -423,7 +417,6 @@ stock Indirect_Call__(meta, GLOBAL_TAG_TYPES:...)
 			{
 			case 'i', 'd', 't', 'f', 'c':
 			{
-				printf("Resolving parameter %d", i - 4);
 				// Resolve non-reference parameters.
 				#emit LREF.pri   addr
 				#emit LOAD.I
