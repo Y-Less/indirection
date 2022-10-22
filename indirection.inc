@@ -305,13 +305,8 @@ stock Indirect_Meta(GLOBAL_TAG_TYPES:...)
 /// <library>indirection</library>
 stock Indirect_CB__(const callback[])
 {
-	// Return the address of the string relative to `COD`, which is the odd
-	// format that `Indirect_Call__` wants it in.
-	#emit LOAD.S.pri   callback
-	#emit LOAD.alt     gsCodSize
-	#emit ADD
-	#emit RETN
-	return 0;
+	// Return the address of a public by name.
+	return GetPublicAddressFromIndex(funcidx(callback));
 }
 
 // Can now do:
