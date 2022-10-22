@@ -36,7 +36,7 @@ Include in your code and begin using the library:
 
 ## Usage
 
-### General Users
+### Basics
 
 If the library supports it, you can call a function that takes another function using `&`:
 
@@ -107,7 +107,36 @@ main()
 
 The available "types" are: `i` - any integer, `f` - floats, `a` - arrays, `s` - strings, `v` - references (`&var`), `x` - varargs (`...`, must be last), `tTag:` - tagged with `Tag:`.
 
-### Library Writers
+### Metadata
+
+You can attach a single piece of metadata to a function.  This is arbitrary data that you can access via the function handle:
+
+```pawn
+Indirect_SetMeta(func, 5);
+printf("%d", Indirect_GetMeta(func)); // Prints 5
+```
+
+This allows you to associate things like handles, for example a timer handle:
+
+```
+stock SetTimerCallback(Func:func<>, time, bool:repeat)
+{
+	Indirect_Claim(func);
+	new timer = SetTimerEx("@y_inlineTimerInvoke", time, repeat, "ii", _:func, !repeat);
+	Indirect_SetMeta(func, timer);
+	return _:func;
+}
+```
+
+There is also a second type of metadata, which you can pass at call time instead to `@` to configure how the call is made:
+
+```pawn
+@(1000, true).timer(playerid);
+```
+
+Assuming `timer` is a handle to some timer function, the `1000` and `true` would configure how the timer is called, while the `playerid` is a parameter to the timer function itself.  This separates information about how the function is called from information passed to the function.  `INDIRECTION_META_DATA_SIZE` defines how much metadata can be stored and defaults to `8`; it is stored in the variable `INDIRECTION_META` and the amount is in `INDIRECTION_COUNT`.
+
+## Library Writers
 
 A parameter that takes a function pointer has the tag `Func:`, and is followed by the type specifier for the function.  For example `OnPlayerCommandText` would be `Func:func<is>` and `OnUnoccupiedVehicleUpdate` would be `Func:func<iiiffffff>`.  In a function signature this would look like:
 
@@ -194,7 +223,7 @@ MyFunction(playerid, Func:func<tFile:>)
 #define MyFunction(%1,&%2) MyFunction(%1, addressof(%2<i>))
 ```
 
-### MySQL Example:
+### MySQL Example
 
 
 ### Low-Level Providers
@@ -253,25 +282,4 @@ sampctl package run
 ```
 
 And connect to `localhost:7777` to test.
-
-### Metadata
-
-You can attach a single piece of metadata to a function.  This is arbitrary data that you can access via the function handle:
-
-```pawn
-Indirect_SetMeta(func, 5);
-printf("%d", Indirect_GetMeta(func)); // Prints 5
-```
-
-This allows you to associate things like handles, for example a timer handle:
-
-```
-stock SetTimerCallback(Func:func<>, time, bool:repeat)
-{
-	Indirect_Claim(func);
-	new timer = SetTimerEx("@y_inlineTimerInvoke", time, repeat, "ii", _:func, !repeat);
-	Indirect_SetMeta(func, timer);
-	return _:func;
-}
-```
 
