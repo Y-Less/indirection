@@ -128,6 +128,10 @@
 	#define GLOBAL_TAG_TYPES {_,Bit,Text,Group,File,Float,Text3D}
 #endif
 
+#if !defined INDIRECTION_META_DATA_SIZE
+	#define INDIRECTION_META_DATA_SIZE (8)
+#endif
+
 enum E_INDIRECTION
 {
 	E_INDIRECTION_ALWAYS_NULL, // So we can tell this is not a string.
@@ -138,6 +142,8 @@ enum E_INDIRECTION
 }
 
 stock
+	INDIRECTION_META[INDIRECTION_META_DATA_SIZE],
+	INDIRECTION_COUNT = 0;
 	INDIRECTION_DATA = 0,
 	INDIRECTION_TAG = 0;
 
@@ -193,6 +199,18 @@ static stock
 	#endif
 #endif
 
+#if !defined __PawnBuild
+	forward __Indirect_FuncInc__();
+	
+	public __Indirect_FuncInc__()
+	{
+		memcpy
+			("", "", 0, 0, 0);
+		funcidx
+			("");
+	}
+#endif
+
 TAGOF(Float);
 TAGOF(File);
 
@@ -239,12 +257,26 @@ SPECIFIER(s);
 
 // This is duplicated because of macro reasons (so we can have a macro fail to
 // match and still work as code).
+/// <library>indirection</library>
 native String:YSI_str_new_static__(const str[], str_create_mode:mode = str_create_mode:0, size = sizeof (str)) = str_new_static;
 #define str_new_static%2.%0(%1) YSI_str_new_static__ INDIR2_$%0(%1)%2()()$(%2)
 
+/// <library>indirection</library>
+native Indirect_Memcpy(dest[], source, index = 0, numbytes, maxlength = sizeof (dest)) = memcpy;
+
+/// <library>indirection</library>
 stock Indirect_Meta(GLOBAL_TAG_TYPES:...)
 {
-	return numargs();
+	// Offset to the first parameter.
+	const cells0 = 3 * cellbytes;
+	const cells1 = 2 * cellbytes;
+	new addr;
+	#emit ADDR.pri     cells0
+	#emit STOR.S.pri   addr
+	#emit ADDR.pri     cells1
+	#emit STOR.pri     INDIRECTION_COUNT
+	Indirect_Memcpy(INDIRECTION_META, addr, 0, INDIRECTION_COUNT, INDIRECTION_META_DATA_SIZE);
+	return (INDIRECTION_COUNT /= cellbytes);
 }
 
 // First separate out calls that just look slightly correct, horrible code like:
@@ -267,18 +299,6 @@ stock Indirect_Meta(GLOBAL_TAG_TYPES:...)
 //   @.&func<iis>(params)
 //   @.&func(params)
 //   
-
-#if !defined __PawnBuild
-	forward __Indirect_FuncInc__();
-	
-	public __Indirect_FuncInc__()
-	{
-		memcpy
-			("", "", 0, 0, 0);
-		funcidx
-			("");
-	}
-#endif
 
 /// <library>indirection</library>
 forward Indirect_Call(func, tag, GLOBAL_TAG_TYPES:...);
@@ -320,6 +340,7 @@ stock Indirect_Call__(meta, GLOBAL_TAG_TYPES:...)
 	#emit ADD.C        cells1
 	// Store the new parameter count.
 	#emit SWAP.pri
+	#emit STOR.pri     INDIRECTION_COUNT
 	// Store the return address.
 	#emit PUSH.alt
 	// Check the pointer type.  If it is in the `COD` area, jump straight to it
