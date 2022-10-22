@@ -300,7 +300,7 @@ stock Indirect_Meta(GLOBAL_TAG_TYPES:...)
 //
 
 // Special case for functions starting with `On`.
-#define INDIR3_:On%0,INDIRECTION_TAG=tagof(%0), ALS_DO%0<Indirect_DoCallback>
+#define INDIR3_:On%0,INDIRECTION_TAG=tagof(%9), ALS_DO_%0<Indirect_DoCallback>
 
 /// <library>indirection</library>
 stock Indirect_CB__(const callback[])
