@@ -143,9 +143,12 @@ enum E_INDIRECTION
 
 stock
 	INDIRECTION_META[INDIRECTION_META_DATA_SIZE],
-	INDIRECTION_COUNT = 0;
+	INDIRECTION_COUNT = 0,
 	INDIRECTION_DATA = 0,
 	INDIRECTION_TAG = 0;
+
+stock const
+	INDIRECTION_NAUGHT = 0;
 
 static stock
 	gsCodSize = 0; // The size of `COD`.
@@ -306,6 +309,8 @@ forward Indirect_Call(func, tag, GLOBAL_TAG_TYPES:...);
 // Old API.
 #define Indirect_Call(%0,%1) (Indirect_Call__(_:INDIR1_:(INDIRECTION_DATA=(%0),INDIRECTION_TAG=(%1),Indirect_Meta())))
 #define INDIR1_:(INDIRECTION_DATA=(%0),INDIRECTION_TAG=(%1,%2),Indirect_Meta())) (INDIRECTION_DATA=(%0),INDIRECTION_TAG=(%1),Indirect_Meta()),%2)
+
+#define Indirect_Meta() INDIRECTION_NAUGHT
 
 /// <library>indirection</library>
 stock Indirect_Call__(meta, GLOBAL_TAG_TYPES:...)
