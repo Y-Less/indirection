@@ -287,13 +287,13 @@ stock Indirect_Meta(GLOBAL_TAG_TYPES:...)
 #define Indirect_Call__(_:(INDIRECTION_DATA=_:%0[%2],INDIRECTION_TAG=tagof(%9),Indirect_Meta()),%3) Indirect_Call__(_:(INDIRECTION_DATA=_:%0,INDIRECTION_TAG=tagof(%9),Indirect_Meta(%2)),%3)
 
 // Look for `<>` generic tag types.
-#define INDIR2_:addressof(%0<%4>),INDIRECTION_TAG=0, addressof(%0<%4>),INDIRECTION_TAG=tagof(F@_@%4:),
+#define INDIR2_:addressof(%0<%4>),INDIRECTION_TAG=0, INDIR4_:addressof(%0<%4>),F@_@%4:INDIRECTION_TAG=F@_@%4:tagof(F@_@%4:),
 
 // The `ALS_DO` callback syntax is `CALLBACK<name, specifier>(params)`
-#define Indirect_DoCallback<%1,%0>(%9) Indirect_CB__("On"#%1),INDIRECTION_TAG=tagof(F@_@%0:),
+#define Indirect_DoCallback<%0,%4>(%9) Indirect_CB__("On"#%0),F@_@%4:INDIRECTION_TAG=F@_@%4:tagof(F@_@%4:),
 
 // Simplify the complex ALS syntax.
-#define Indirect_ALS<%0><%1> %1<,%0>()
+//#define Indirect_ALS<%0><%1> %1<,%0>()
 // Example:
 //
 //   #define ALS_DO_PlayerConnect Indirect_ALSTag<i>
@@ -302,10 +302,15 @@ stock Indirect_Meta(GLOBAL_TAG_TYPES:...)
 // Special case for functions starting with `On`.
 #define INDIR3_:On%0,INDIRECTION_TAG=tagof(%9), ALS_DO_%0<Indirect_DoCallback>
 
+#define INDIR4_:addressof(On%0<%4>) Indirect_CB__("On"#%0)
+
 /// <library>indirection</library>
 stock Indirect_CB__(const callback[])
 {
 	// Return the address of a public by name.
+	printf("callback = %s", callback);
+	printf("callback = %d", funcidx(callback));
+	printf("callback = %d", GetPublicAddressFromIndex(funcidx(callback)));
 	return GetPublicAddressFromIndex(funcidx(callback));
 }
 
@@ -337,6 +342,9 @@ stock Indirect_Call__(meta, GLOBAL_TAG_TYPES:...)
 	static
 		addr = 0;
 	#pragma unused meta
+	
+	printf("INDIRECTION_DATA = %d", INDIRECTION_DATA);
+	printf("INDIRECTION_TAG = %d", INDIRECTION_TAG);
 	if (!INDIRECTION_DATA)
 	{
 		return 0;
@@ -415,6 +423,7 @@ stock Indirect_Call__(meta, GLOBAL_TAG_TYPES:...)
 			{
 			case 'i', 'd', 't', 'f', 'c':
 			{
+				printf("Resolving parameter %d", i - 4);
 				// Resolve non-reference parameters.
 				#emit LREF.pri   addr
 				#emit LOAD.I
