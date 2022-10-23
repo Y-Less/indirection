@@ -131,10 +131,36 @@ stock SetTimerCallback(Func:func<>, time, bool:repeat)
 There is also a second type of metadata, which you can pass at call time instead to `@` to configure how the call is made:
 
 ```pawn
-@(1000, true).timer(playerid);
+@.timer[1000, true](playerid);
 ```
 
 Assuming `timer` is a handle to some timer function, the `1000` and `true` would configure how the timer is called, while the `playerid` is a parameter to the timer function itself.  This separates information about how the function is called from information passed to the function.  `INDIRECTION_META_DATA_SIZE` defines how much metadata can be stored and defaults to `8`; it is stored in the variable `INDIRECTION_META` and the amount is in `INDIRECTION_COUNT`.
+
+### Callbacks
+
+There is special handling in-built for callbacks that start with `On`.  This is almost identical to `call` from y_als (indeed it is designed to replace it):
+
+```pawn
+@.OnPlayerConnect(playerid);
+```
+
+That will correctly call the full callback with all hooks.  Because all calls need some type information for the parameters, the tag is derived from an `ALS_DO_PlayerConnect` macro:
+
+```pawn
+#define ALS_DO_PlayerConnect<%0> %0<PlayerConnect,i>(end:playerid)
+```
+
+These macros are pre-defined for all standard SA:MP callbacks in y_als, but can be custom defined for any other callback too.  indirection doesn't use the parameter names, so this is enough:
+
+```pawn
+#define ALS_DO_CallbackExample<%1> %1<CallbackExample,ifsi>()
+```
+
+Alternatively you can use `&` syntax, which gets the address of any function, again with special handling for `On` callbacks to get the original version:
+
+```pawn
+@.&OnPlayerConnect<i>(playerid);
+```
 
 ## Library Writers
 
