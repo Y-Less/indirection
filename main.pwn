@@ -172,8 +172,15 @@ static
 forward OnPublicIndirectionTest(a, Float:b, const c[], d);
 public OnPublicIndirectionTest(a, Float:b, const c[], d)
 {
-	gTestVar1 = a;
-	gTestVar2 = _:b;
+	new meta;
+	if (Indirect_GetMetaInt(0, meta))
+		gTestVar1 = a + meta;
+	else
+		gTestVar1 = a;
+	if (Indirect_GetMetaInt(1, meta))
+		gTestVar2 = (_:b) + meta;
+	else
+		gTestVar2 = _:b;
 	gTestVar3 = strval(c);
 	gTestVar4 = d;
 }
@@ -196,8 +203,8 @@ public OnPublicIndirectionTest(a, Float:b, const c[], d)
 	gTestVar3 = 100;
 	gTestVar4 = 100;
 	@.&OnPublicIndirectionTest<ifsi>[5, 6](5, 6.0, "7", 8);
-	ASSERT_EQ(gTestVar1, 5);
-	ASSERT_EQ(gTestVar2, _:(6.0));
+	ASSERT_EQ(gTestVar1, 10);
+	ASSERT_EQ(gTestVar2, _:(6.0) + 6);
 	ASSERT_EQ(gTestVar3, 7);
 	ASSERT_EQ(gTestVar4, 8);
 	gTestVar1 = 100;
@@ -213,10 +220,11 @@ public OnPublicIndirectionTest(a, Float:b, const c[], d)
 	gTestVar2 = 100;
 	gTestVar3 = 100;
 	gTestVar4 = 100;
-	@.&OnPublicIndirectionTest[5, 6]<ifsi>(5, 6.0, "7", 8);
-	ASSERT_EQ(gTestVar1, 5);
+	@.&OnPublicIndirectionTest[1]<ifsi>(5, 6.0, "7", 8);
+	ASSERT_EQ(gTestVar1, 5 + 1);
 	ASSERT_EQ(gTestVar2, _:(6.0));
 	ASSERT_EQ(gTestVar3, 7);
 	ASSERT_EQ(gTestVar4, 8);
 }
+
 

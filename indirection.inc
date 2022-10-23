@@ -1095,6 +1095,122 @@ public Indirect_FromCallback(Func:cb<>, bool:release)
 /*-------------------------------------------------------------------------*//**
  * <library>indirection</library>
  * <remarks>
+ *  Get integer metadata.
+ * </remarks>
+ *//*------------------------------------------------------------------------**/
+
+stock bool:Indirect_GetMetaInt(index, &ret)
+{
+	if (INDIRECTION_COUNT > index)
+	{
+		index = INDIRECTION_META[index];
+		#emit LREF.S.pri   index
+		#emit SREF.S.pri   ret
+		return true;
+	}
+	return false;
+}
+
+/*-------------------------------------------------------------------------*//**
+ * <library>indirection</library>
+ * <remarks>
+ *  Get float metadata.
+ * </remarks>
+ *//*------------------------------------------------------------------------**/
+
+stock bool:Indirect_GetMetaFloat(index, &Float:ret)
+{
+	if (INDIRECTION_COUNT > index)
+	{
+		index = INDIRECTION_META[index];
+		#emit LREF.S.pri   index
+		#emit SREF.S.pri   ret
+		return true;
+	}
+	return false;
+}
+
+/*-------------------------------------------------------------------------*//**
+ * <library>indirection</library>
+ * <remarks>
+ *  Get boolean metadata.
+ * </remarks>
+ *//*------------------------------------------------------------------------**/
+
+stock bool:Indirect_GetMetaBool(index, &bool:ret)
+{
+	if (INDIRECTION_COUNT > index)
+	{
+		index = INDIRECTION_META[index];
+		#emit LREF.S.pri   index
+		#emit SREF.S.pri   ret
+		return true;
+	}
+	return false;
+}
+
+/*-------------------------------------------------------------------------*//**
+ * <library>indirection</library>
+ * <remarks>
+ *  Get ref metadata.
+ * </remarks>
+ *//*------------------------------------------------------------------------**/
+
+stock bool:Indirect_GetMetaRef(index, &ret)
+{
+	if (INDIRECTION_COUNT > index)
+	{
+		index = INDIRECTION_META[index];
+		#emit LOAD.S.pri   index
+		#emit SREF.S.pri   ret
+		return true;
+	}
+	return false;
+}
+
+/*-------------------------------------------------------------------------*//**
+ * <library>indirection</library>
+ * <remarks>
+ *  Set ref metadata.
+ * </remarks>
+ *//*------------------------------------------------------------------------**/
+
+stock bool:Indirect_SetMetaRef(index, val)
+{
+	if (INDIRECTION_COUNT > index)
+	{
+		index = INDIRECTION_META[index];
+		#emit LOAD.S.pri   val
+		#emit SREF.S.pri   index
+		return true;
+	}
+	return false;
+}
+
+/// <library>indirection</library>
+native Indirect_Strcat(dest[], const source, maxlength = sizeof (dest)) = dest;
+
+/*-------------------------------------------------------------------------*//**
+ * <library>indirection</library>
+ * <remarks>
+ *  Get ref metadata.
+ * </remarks>
+ *//*------------------------------------------------------------------------**/
+
+stock bool:Indirect_GetMetaString(index, dest[], size = sizeof (dest))
+{
+	if (INDIRECTION_COUNT > index)
+	{
+		dest[0] = '\0',
+		Indirect_Strcat(dest, INDIRECTION_META[index], size);
+		return true;
+	}
+	return false;
+}
+
+/*-------------------------------------------------------------------------*//**
+ * <library>indirection</library>
+ * <remarks>
  *  Get the size of the COD AMX segment.
  * </remarks>
  *//*------------------------------------------------------------------------**/
