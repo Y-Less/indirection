@@ -290,7 +290,7 @@ stock Indirect_Meta(GLOBAL_TAG_TYPES:...)
 #define INDIR2_:addressof(%0<%4>),INDIRECTION_TAG=prototypeof(%9), addressof(%0<%4>),F@_@%4:INDIRECTION_TAG=F@_@%4:tagof(F@_@%4:),
 
 // The `ALS_DO` callback syntax is `CALLBACK<name, specifier>(params)`
-#define Indirect_DoCallback<%0,%4>(%9) Indirect_CB__("On"#%0),F@_@%4:INDIRECTION_TAG=F@_@%4:tagof(F@_@%4:),
+#define Indirect_DoCallback<%0,%4>(%9) O@A@("On"#%0),F@_@%4:INDIRECTION_TAG=F@_@%4:tagof(F@_@%4:),
 
 // Simplify the complex ALS syntax.
 //#define Indirect_ALS<%0><%1> %1<,%0>()
@@ -298,13 +298,6 @@ stock Indirect_Meta(GLOBAL_TAG_TYPES:...)
 //
 //   #define ALS_DO_PlayerConnect Indirect_ALSTag<i>
 //
-
-/// <library>indirection</library>
-stock Indirect_CB__(const callback[])
-{
-	// Return the address of a public by name.
-	return GetPublicAddressFromIndex(funcidx(callback));
-}
 
 // Can now do:
 //   
