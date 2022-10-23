@@ -19,7 +19,7 @@ stock TestCallbackV()
 	ASSERT_EQ(numargs(), 0);
 	gCall = 101;
 }
-#define CALL@TestCallbackV TestCallbackV()
+#define CALL@TestCallbackV%8() TestCallbackV%8()
 
 static TestCallback0(a, b, c)
 {
@@ -40,7 +40,7 @@ static stock TestCallback2(a, const string:s[], d)
 	ASSERT_NE(s[0], '\0');
 	gCall = a * d;
 }
-#define CALL@TestCallback2 TestCallback2(0,"",0)
+#define CALL@TestCallback2%8() TestCallback2%8(0,"",0)
 
 static TestCallback4(a, &b, c)
 {
