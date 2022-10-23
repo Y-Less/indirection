@@ -284,7 +284,7 @@ stock Indirect_Meta(GLOBAL_TAG_TYPES:...)
 #define INDIRECTION_DATA=_:%9&%0,INDIRECTION_TAG=tagof(%9), INDIRECTION_DATA=_:INDIR2_:addressof(%0),INDIRECTION_TAG=0,
 
 // Now we know this is an indirection call, are there any meta-data params?
-#define Indirect_Call__(_:(INDIRECTION_DATA=_:%0[%2],INDIRECTION_TAG=tagof(%9),Indirect_Meta()),%3) Indirect_Call__(_:(INDIRECTION_DATA=_:%0,INDIRECTION_TAG=tagof(%9),Indirect_Meta(%2)),%3)
+#define Indirect_Call__(_:(INDIRECTION_DATA=_:%0[%2]%6,INDIRECTION_TAG=tagof(%4),Indirect_Meta()),%3) Indirect_Call__(_:(INDIRECTION_DATA=_:%0%6,INDIRECTION_TAG=tagof(%4),Indirect_Meta(%2)),%3)
 
 // Look for `<>` generic tag types.
 #define INDIR2_:addressof(%0<%4>),INDIRECTION_TAG=0, INDIR4_:addressof(%0<%4>),F@_@%4:INDIRECTION_TAG=F@_@%4:tagof(F@_@%4:),
