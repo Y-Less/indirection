@@ -260,7 +260,7 @@ SPECIFIER(s);
 //   @.&func(params)
 //   @.func[meta](params)
 //   
-#define str_new_static.%0(%1) (Indirect_Call__(_:(INDIRECTION_DATA=_:INDIR3_:%0,INDIRECTION_TAG=tagof(%0),Indirect_Meta()),%1))
+#define str_new_static.%0(%1) (Indirect_Call__(_:(INDIRECTION_DATA=_:%0,INDIRECTION_TAG=tagof(%0),Indirect_Meta()),%1))
 
 /// <library>indirection</library>
 native Indirect_Memcpy(dest[], source, index = 0, numbytes, maxlength = sizeof (dest)) = memcpy;
@@ -274,20 +274,20 @@ stock Indirect_Meta(GLOBAL_TAG_TYPES:...)
 	new addr;
 	#emit ADDR.pri     cells0
 	#emit STOR.S.pri   addr
-	#emit ADDR.pri     cells1
+	#emit LOAD.S.pri   cells1
 	#emit STOR.pri     INDIRECTION_COUNT
 	Indirect_Memcpy(INDIRECTION_META, addr, 0, INDIRECTION_COUNT, INDIRECTION_META_DATA_SIZE);
 	return (INDIRECTION_COUNT /= cellbytes);
 }
 
 // Look for `&` for variable dereferencing.
-#define INDIRECTION_DATA=_:%9&%0,INDIRECTION_TAG=tagof(%9), INDIRECTION_DATA=_:INDIR2_:addressof(%0),INDIRECTION_TAG=0,
+#define INDIRECTION_DATA=_:%9&%0,INDIRECTION_TAG=tagof(%9), INDIRECTION_DATA=_:INDIR2_:addressof(%0),INDIRECTION_TAG=prototypeof(%0),
 
 // Now we know this is an indirection call, are there any meta-data params?
 #define Indirect_Call__(_:(INDIRECTION_DATA=_:%0[%2]%6,INDIRECTION_TAG=tagof(%4),Indirect_Meta()),%3) Indirect_Call__(_:(INDIRECTION_DATA=_:%0%6,INDIRECTION_TAG=tagof(%4),Indirect_Meta(%2)),%3)
 
 // Look for `<>` generic tag types.
-#define INDIR2_:addressof(%0<%4>),INDIRECTION_TAG=0, INDIR4_:addressof(%0<%4>),F@_@%4:INDIRECTION_TAG=F@_@%4:tagof(F@_@%4:),
+#define INDIR2_:addressof(%0<%4>),INDIRECTION_TAG=prototypeof(%9), addressof(%0<%4>),F@_@%4:INDIRECTION_TAG=F@_@%4:tagof(F@_@%4:),
 
 // The `ALS_DO` callback syntax is `CALLBACK<name, specifier>(params)`
 #define Indirect_DoCallback<%0,%4>(%9) Indirect_CB__("On"#%0),F@_@%4:INDIRECTION_TAG=F@_@%4:tagof(F@_@%4:),
@@ -298,11 +298,6 @@ stock Indirect_Meta(GLOBAL_TAG_TYPES:...)
 //
 //   #define ALS_DO_PlayerConnect Indirect_ALSTag<i>
 //
-
-// Special case for functions starting with `On`.
-#define INDIR3_:On%0,INDIRECTION_TAG=tagof(%9), ALS_DO_%0<Indirect_DoCallback>
-
-#define INDIR4_:addressof(On%0<%4>) Indirect_CB__("On"#%0)
 
 /// <library>indirection</library>
 stock Indirect_CB__(const callback[])

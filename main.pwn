@@ -1,3 +1,5 @@
+//#pragma option -a
+
 #define RUN_TESTS
 
 #include <a_samp>
@@ -172,6 +174,7 @@ static
 forward OnPublicIndirectionTest(a, Float:b, const c[], d);
 public OnPublicIndirectionTest(a, Float:b, const c[], d)
 {
+	//printf("meta: %d", INDIRECTION_COUNT);
 	new meta;
 	if (Indirect_GetMetaInt(0, meta))
 		gTestVar1 = a + meta;
@@ -186,6 +189,7 @@ public OnPublicIndirectionTest(a, Float:b, const c[], d)
 }
 
 #define ALS_DO_PublicIndirectionTest<%1> %1<PublicIndirectionTest,ifsi>()
+#define CALL@OnPublicIndirectionTest%8() OnPublicIndirectionTest%8(0, 0.0, "", 0)
 
 @test() OnPublicIndirectionTest()
 {
@@ -193,35 +197,44 @@ public OnPublicIndirectionTest(a, Float:b, const c[], d)
 	gTestVar2 = 100;
 	gTestVar3 = 100;
 	gTestVar4 = 100;
-	@.OnPublicIndirectionTest(5, 6.0, "7", 8);
-	ASSERT_EQ(gTestVar1, 5);
+	@.&OnPublicIndirectionTest[2](5, 6.0, "7", 8);
+	ASSERT_EQ(gTestVar1, 5 + 2);
 	ASSERT_EQ(gTestVar2, _:(6.0));
 	ASSERT_EQ(gTestVar3, 7);
 	ASSERT_EQ(gTestVar4, 8);
-	gTestVar1 = 100;
-	gTestVar2 = 100;
-	gTestVar3 = 100;
-	gTestVar4 = 100;
+	gTestVar1 = 200;
+	gTestVar2 = 200;
+	gTestVar3 = 200;
+	gTestVar4 = 200;
 	@.&OnPublicIndirectionTest<ifsi>[5, 6](5, 6.0, "7", 8);
 	ASSERT_EQ(gTestVar1, 10);
 	ASSERT_EQ(gTestVar2, _:(6.0) + 6);
 	ASSERT_EQ(gTestVar3, 7);
 	ASSERT_EQ(gTestVar4, 8);
-	gTestVar1 = 100;
-	gTestVar2 = 100;
-	gTestVar3 = 100;
-	gTestVar4 = 100;
+	gTestVar1 = 300;
+	gTestVar2 = 300;
+	gTestVar3 = 300;
+	gTestVar4 = 300;
 	@.&OnPublicIndirectionTest<ifsi>(5, 6.0, "7", 8);
 	ASSERT_EQ(gTestVar1, 5);
 	ASSERT_EQ(gTestVar2, _:(6.0));
 	ASSERT_EQ(gTestVar3, 7);
 	ASSERT_EQ(gTestVar4, 8);
-	gTestVar1 = 100;
-	gTestVar2 = 100;
-	gTestVar3 = 100;
-	gTestVar4 = 100;
+	gTestVar1 = 400;
+	gTestVar2 = 400;
+	gTestVar3 = 400;
+	gTestVar4 = 400;
 	@.&OnPublicIndirectionTest[1]<ifsi>(5, 6.0, "7", 8);
 	ASSERT_EQ(gTestVar1, 5 + 1);
+	ASSERT_EQ(gTestVar2, _:(6.0));
+	ASSERT_EQ(gTestVar3, 7);
+	ASSERT_EQ(gTestVar4, 8);
+	gTestVar1 = 500;
+	gTestVar2 = 500;
+	gTestVar3 = 500;
+	gTestVar4 = 500;
+	@.&OnPublicIndirectionTest(5, 6.0, "7", 8);
+	ASSERT_EQ(gTestVar1, 5);
 	ASSERT_EQ(gTestVar2, _:(6.0));
 	ASSERT_EQ(gTestVar3, 7);
 	ASSERT_EQ(gTestVar4, 8);

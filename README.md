@@ -141,25 +141,13 @@ Assuming `timer` is a handle to some timer function, the `1000` and `true` would
 There is special handling in-built for callbacks that start with `On`.  This is almost identical to `call` from y_als (indeed it is designed to replace it):
 
 ```pawn
-@.OnPlayerConnect(playerid);
+@.&OnPlayerConnect(playerid);
 ```
 
-That will correctly call the full callback with all hooks.  Because all calls need some type information for the parameters, the tag is derived from an `ALS_DO_PlayerConnect` macro:
+As with most calls this tries to use `CALL@` for both the address and parameter types, but with some special handling to not use the lastest hook if there are any.  These macros are pre-defined for all standard SA:MP callbacks in y_als, but can be custom defined for any other callback too:
 
 ```pawn
-#define ALS_DO_PlayerConnect<%0> %0<PlayerConnect,i>(end:playerid)
-```
-
-These macros are pre-defined for all standard SA:MP callbacks in y_als, but can be custom defined for any other callback too.  indirection doesn't use the parameter names, so this is enough:
-
-```pawn
-#define ALS_DO_CallbackExample<%1> %1<CallbackExample,ifsi>()
-```
-
-Alternatively you can use `&` syntax, which gets the address of any function, again with special handling for `On` callbacks to get the original version:
-
-```pawn
-@.&OnPlayerConnect<i>(playerid);
+#define CALL@OnCallbackExample%8() OnCallbackExample%8(0, 0.0, "", 0)
 ```
 
 ## Library Writers
