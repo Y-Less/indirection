@@ -1048,10 +1048,7 @@ stock Indirect_DeRef_(...)
 
 stock Indirect_DePtr_(ptr)
 {
-	const cells0 = 3 * cellbytes;
-	#pragma unused ptr
-	assert(numargs() == 1);
-	#emit LOAD.S.pri       cells0
+	#emit LOAD.S.pri       ptr
 	#emit LOAD.alt         gsCodSize
 	#emit SUB
 	#emit RETN
