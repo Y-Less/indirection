@@ -39,8 +39,8 @@
  *     Indirection is a system for calling function pointers in a generic and
  *     type-safe way.  Instead of <c>CallLocalFunction</c>, <c>Call</c>,
  *     <c>defer</c>, <c>Callback_Call</c>, or any other method, this gives one
- *     common interface which can be extended by library authors; utilising tags
- *     for compile-time parameters.
+ *     common interface which can be extended by library authors; utilising
+ *     tags for compile-time parameters.
  *   </remarks>
  * </library>
  */
@@ -792,7 +792,7 @@ stock Indirect_Array(func, tag, const params[], size = sizeof (params))
  * <library>indirection</library>
  * <param name="func">The function pointer with attached metadata.</param>
  * <remarks>
- *  Gets extra data from the pointer.
+ *   Gets extra data from the pointer.
  * </remarks>
  *//*------------------------------------------------------------------------**/
 
@@ -864,12 +864,12 @@ stock Indirect_SetMeta_(func, data)
  * <library>indirection</library>
  * <param name="func">The function pointer you want to use later.</param>
  * <remarks>
- *  If a function pointer is used within one function, that is not a problem.
- *  However, if you want to store the function pointer for use later, you must
- *  first "claim" it, so that any associated data is not cleared when the
- *  parent function ends (i.e. the function that called your function).  After
- *  use it must be released, and the number of claims must match the number of
- *  releases.
+ *   If a function pointer is used within one function, that is not a problem.
+ *   However, if you want to store the function pointer for use later, you must
+ *   first "claim" it, so that any associated data is not cleared when the
+ *   parent function ends (i.e. the function that called your function).  After
+ *   use it must be released, and the number of claims must match the number of
+ *   releases.
  * </remarks>
  *//*------------------------------------------------------------------------**/
 
@@ -909,12 +909,12 @@ stock Indirect_Claim_(func)
  * <library>indirection</library>
  * <param name="func">The function pointer you had previously stored.</param>
  * <remarks>
- *  If a function pointer is used within one function, that is not a problem.
- *  However, if you want to store the function pointer for use later, you must
- *  first "claim" it, so that any associated data is not cleared when the
- *  parent function ends (i.e. the function that called your function).  After
- *  use it must be released, and the number of claims must match the number of
- *  releases.
+ *   If a function pointer is used within one function, that is not a problem.
+ *   However, if you want to store the function pointer for use later, you must
+ *   first "claim" it, so that any associated data is not cleared when the
+ *   parent function ends (i.e. the function that called your function).  After
+ *   use it must be released, and the number of claims must match the number of
+ *   releases.
  * </remarks>
  *//*------------------------------------------------------------------------**/
 
@@ -958,8 +958,8 @@ stock Indirect_Release_(func)
  * </param>
  * <param name="dest">Where to store the name.</param>
  * <remarks>
- *  Functions are tagged with a special tag containing their specifiers.  Get
- *  the string value of that tag from the AMX header.
+ *   Functions are tagged with a special tag containing their specifiers.  Get
+ *   the string value of that tag from the AMX header.
  * </remarks>
  *//*------------------------------------------------------------------------**/
 
@@ -977,8 +977,9 @@ stock Indirect_Tag(id, dest[32])
  * <library>indirection</library>
  * <param name="">The array to convert to an offset pointer.</param>
  * <remarks>
- *  Strings and arrays are passed relative to `COD` not `DAT` so they can be
- *  distinguished from normal function pointers.  This function does the offset.
+ *   Strings and arrays are passed relative to `COD` not `DAT` so they can be
+ *   distinguished from normal function pointers.  This function does the
+ *   offset.
  * </remarks>
  *//*------------------------------------------------------------------------**/
 
@@ -998,8 +999,9 @@ stock Indirect_Ref_(...)
  * <library>indirection</library>
  * <param name="">The array to convert to an offset pointer.</param>
  * <remarks>
- *  Strings and arrays are passed relative to `COD` not `DAT` so they can be
- *  distinguished from normal function pointers.  This function does the offset.
+ *   Strings and arrays are passed relative to `COD` not `DAT` so they can be
+ *   distinguished from normal function pointers.  This function does the
+ *   offset.
  * </remarks>
  *//*------------------------------------------------------------------------**/
 
@@ -1020,8 +1022,9 @@ stock Indirect_Ptr_(ptr)
  * <library>indirection</library>
  * <param name="">The array to convert to an offset pointer.</param>
  * <remarks>
- *  Strings and arrays are passed relative to `COD` not `DAT` so they can be
- *  distinguished from normal function pointers.  This function does the offset.
+ *   Strings and arrays are passed relative to `COD` not `DAT` so they can be
+ *   distinguished from normal function pointers.  This function does the
+ *   offset.
  * </remarks>
  *//*------------------------------------------------------------------------**/
 
@@ -1041,8 +1044,9 @@ stock Indirect_DeRef_(...)
  * <library>indirection</library>
  * <param name="">The array to convert to an offset pointer.</param>
  * <remarks>
- *  Strings and arrays are passed relative to `COD` not `DAT` so they can be
- *  distinguished from normal function pointers.  This function does the offset.
+ *   Strings and arrays are passed relative to `COD` not `DAT` so they can be
+ *   distinguished from normal function pointers.  This function does the
+ *   offset.
  * </remarks>
  *//*------------------------------------------------------------------------**/
 
@@ -1063,7 +1067,7 @@ stock Indirect_DePtr_(ptr)
 /*-------------------------------------------------------------------------*//**
  * <library>indirection</library>
  * <remarks>
- *  A generic public wrapper for calling inline functions.
+ *   A generic public wrapper for calling inline functions.
  * </remarks>
  *//*------------------------------------------------------------------------**/
 
@@ -1080,7 +1084,7 @@ public Indirect_FromCallback(Func:cb<>, bool:release)
 /*-------------------------------------------------------------------------*//**
  * <library>indirection</library>
  * <remarks>
- *  Get integer metadata.
+ *   Get integer metadata.
  * </remarks>
  *//*------------------------------------------------------------------------**/
 
@@ -1099,7 +1103,7 @@ stock bool:Indirect_GetMetaInt(index, &ret)
 /*-------------------------------------------------------------------------*//**
  * <library>indirection</library>
  * <remarks>
- *  Get float metadata.
+ *   Get float metadata.
  * </remarks>
  *//*------------------------------------------------------------------------**/
 
@@ -1118,7 +1122,7 @@ stock bool:Indirect_GetMetaFloat(index, &Float:ret)
 /*-------------------------------------------------------------------------*//**
  * <library>indirection</library>
  * <remarks>
- *  Get boolean metadata.
+ *   Get boolean metadata.
  * </remarks>
  *//*------------------------------------------------------------------------**/
 
@@ -1137,7 +1141,7 @@ stock bool:Indirect_GetMetaBool(index, &bool:ret)
 /*-------------------------------------------------------------------------*//**
  * <library>indirection</library>
  * <remarks>
- *  Get ref metadata.
+ *   Get ref metadata.
  * </remarks>
  *//*------------------------------------------------------------------------**/
 
@@ -1156,7 +1160,7 @@ stock bool:Indirect_GetMetaRef(index, &ret)
 /*-------------------------------------------------------------------------*//**
  * <library>indirection</library>
  * <remarks>
- *  Set ref metadata.
+ *   Set ref metadata.
  * </remarks>
  *//*------------------------------------------------------------------------**/
 
@@ -1178,7 +1182,7 @@ native Indirect_Strcat(dest[], const source, maxlength = sizeof (dest)) = dest;
 /*-------------------------------------------------------------------------*//**
  * <library>indirection</library>
  * <remarks>
- *  Get ref metadata.
+ *   Get ref metadata.
  * </remarks>
  *//*------------------------------------------------------------------------**/
 
@@ -1196,7 +1200,7 @@ stock bool:Indirect_GetMetaString(index, dest[], size = sizeof (dest))
 /*-------------------------------------------------------------------------*//**
  * <library>indirection</library>
  * <remarks>
- *  Get the size of the COD AMX segment.
+ *   Get the size of the COD AMX segment.
  * </remarks>
  *//*------------------------------------------------------------------------**/
 
