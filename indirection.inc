@@ -139,6 +139,8 @@ enum E_INDIRECTION
 	E_INDIRECTION_CLAIM,       // Called by `Indirect_Claim`.
 	E_INDIRECTION_RELEASE,     // Called by `Indirect_Release`.
 	E_INDIRECTION_METADATA,    // Only used by end-users.
+	E_INDIRECTION_TAG,         // Save the encoded parameters tag of this callback.
+	E_INDIRECTION_OWNER        // Attach the function to players etc.
 }
 
 stock
@@ -146,6 +148,25 @@ stock
 	INDIRECTION_COUNT = 0,
 	INDIRECTION_DATA = 0,
 	INDIRECTION_TAG = 0;
+
+// Constant offsets for assembly.
+const
+	E_INDIRECTION_ALWAYS_NULL_cells = _:E_INDIRECTION_ALWAYS_NULL,
+	E_INDIRECTION_HANDER_cells      = _:E_INDIRECTION_HANDER,
+	E_INDIRECTION_CLAIM_cells       = _:E_INDIRECTION_CLAIM,
+	E_INDIRECTION_RELEASE_cells     = _:E_INDIRECTION_RELEASE,
+	E_INDIRECTION_METADATA_cells    = _:E_INDIRECTION_METADATA,
+	E_INDIRECTION_TAG_cells         = _:E_INDIRECTION_TAG,
+	E_INDIRECTION_OWNER_cells       = _:E_INDIRECTION_OWNER,
+	E_INDIRECTION_cells             = _:E_INDIRECTION,
+	E_INDIRECTION_ALWAYS_NULL_bytes = _:E_INDIRECTION_ALWAYS_NULL * cellbytes,
+	E_INDIRECTION_HANDER_bytes      = _:E_INDIRECTION_HANDER * cellbytes,
+	E_INDIRECTION_CLAIM_bytes       = _:E_INDIRECTION_CLAIM * cellbytes,
+	E_INDIRECTION_RELEASE_bytes     = _:E_INDIRECTION_RELEASE * cellbytes,
+	E_INDIRECTION_METADATA_bytes    = _:E_INDIRECTION_METADATA * cellbytes,
+	E_INDIRECTION_TAG_bytes         = _:E_INDIRECTION_TAG * cellbytes,
+	E_INDIRECTION_OWNER_bytes       = _:E_INDIRECTION_OWNER * cellbytes,
+	E_INDIRECTION_bytes             = _:E_INDIRECTION * cellbytes;
 
 stock const
 	INDIRECTION_NAUGHT = 0;
@@ -332,7 +353,6 @@ stock Indirect_Call__(meta, GLOBAL_TAG_TYPES:...)
 {
 	const cells0 = 4 * cellbytes;
 	const cells1 = -1 * cellbytes;
-	const cells2 = 1 * cellbytes;
 	const cells3 = 1 * cellbytes;
 	const cells4 = 2 * cellbytes;
 	static
@@ -378,7 +398,7 @@ stock Indirect_Call__(meta, GLOBAL_TAG_TYPES:...)
 		if (!INDIRECTION_DATA)
 		{
 			// Get the function at `func - COD + 4`.
-			#emit CONST.pri    cells2
+			#emit CONST.pri    E_INDIRECTION_HANDER_bytes
 			#emit ADD
 			#emit LOAD.I
 			// Call it, passing `func` as a proper pointer, NOT skipping `PROC`.
@@ -678,7 +698,6 @@ stock Indirect_Array(func, tag, const params[], size = sizeof (params))
 	#endif
 	const cells1 = 5 * cellbytes;
 	const cells2 = 6 * cellbytes;
-	const cells3 = 1 * cellbytes;
 	const cells4 = 1 * cellbytes;
 	const cells5 = 2 * cellbytes;
 	static
@@ -744,7 +763,7 @@ stock Indirect_Array(func, tag, const params[], size = sizeof (params))
 			#emit STOR.alt     INDIRECTION_DATA
 			// Get the function at `func - COD + 4`.
 			#emit LOAD.pri     INDIRECTION_DATA
-			#emit ADD.C        cells3
+			#emit ADD.C        E_INDIRECTION_HANDER_bytes
 			#emit LOAD.I
 			// Call it, passing `func` as a proper pointer, NOT skipping `PROC`.
 			#emit SCTRL        6
@@ -801,15 +820,14 @@ stock Indirect_Array(func, tag, const params[], size = sizeof (params))
 
 /*-------------------------------------------------------------------------*//**
  * <library>indirection</library>
- * <param name="func">The function pointer with attached metadata.</param>
+ * <param name="func">The function pointer with attached Tagdata.</param>
  * <remarks>
  *   Gets extra data from the pointer.
  * </remarks>
  *//*------------------------------------------------------------------------**/
 
-stock Indirect_GetMeta_(func)
+stock Indirect_GetTag_(func)
 {
-	const cells0 = 4 * cellbytes;
 	if (func >= gsCodSize)
 	{
 		// Get the data at `func - COD`.
@@ -827,24 +845,23 @@ stock Indirect_GetMeta_(func)
 		{}
 		// I'm relying on `alt` not changing here...
 		// Get the function at `func - COD + 16`.
-		#emit CONST.pri    cells0
+		#emit CONST.pri    E_INDIRECTION_TAG_bytes
 		#emit ADD
 		#emit LOAD.I
 		#emit RETN
 	}
 	return 0;
 }
-#define Indirect_GetMeta(%0) Indirect_GetMeta_(_:%0)
+#define Indirect_GetTag(%0) Indirect_GetTag_(_:%0)
 
 /*-------------------------------------------------------------------------*//**
  * <library>indirection</library>
- * <param name="func">The function pointer to attach metadata to.</param>
- * <param name="data">The metadata.</param>
+ * <param name="func">The function pointer to attach Tagdata to.</param>
+ * <param name="data">The Tagdata.</param>
  *//*------------------------------------------------------------------------**/
 
-stock Indirect_SetMeta_(func, data)
+stock Indirect_SetTag_(func, data)
 {
-	const cells0 = 4 * cellbytes;
 	if (func >= gsCodSize)
 	{
 		// Get the data at `func - COD`.
@@ -862,7 +879,147 @@ stock Indirect_SetMeta_(func, data)
 		{}
 		// I'm relying on `alt` not changing here...
 		// Get the function at `func - COD + 16`.
-		#emit CONST.pri    cells0
+		#emit CONST.pri    E_INDIRECTION_TAG_bytes
+		#emit ADD
+		#emit LOAD.S.alt   data
+		#emit XCHG
+		#emit STOR.I
+	}
+}
+#define Indirect_SetTag(%0) Indirect_SetTag_(_:%0)
+
+/*-------------------------------------------------------------------------*//**
+ * <library>indirection</library>
+ * <param name="func">The function pointer with attached Ownerdata.</param>
+ * <remarks>
+ *   Gets extra data from the pointer.
+ * </remarks>
+ *//*------------------------------------------------------------------------**/
+
+stock Indirect_GetOwner_(func)
+{
+	if (func >= gsCodSize)
+	{
+		// Get the data at `func - COD`.
+		#emit LOAD.S.pri   func
+		#emit LOAD.alt     gsCodSize
+		#emit SUB
+		#emit MOVE.alt
+		#emit LOAD.I
+		#emit STOR.S.pri   func
+		if (func)
+		{
+			// Probably a string.
+			return 0;
+		}
+		{}
+		// I'm relying on `alt` not changing here...
+		// Get the function at `func - COD + 16`.
+		#emit CONST.pri    E_INDIRECTION_OWNER_bytes
+		#emit ADD
+		#emit LOAD.I
+		#emit RETN
+	}
+	return 0;
+}
+#define Indirect_GetOwner(%0) Indirect_GetOwner_(_:%0)
+
+/*-------------------------------------------------------------------------*//**
+ * <library>indirection</library>
+ * <param name="func">The function pointer to attach Ownerdata to.</param>
+ * <param name="data">The Ownerdata.</param>
+ *//*------------------------------------------------------------------------**/
+
+stock Indirect_SetOwner_(func, data)
+{
+	if (func >= gsCodSize)
+	{
+		// Get the data at `func - COD`.
+		#emit LOAD.S.pri   func
+		#emit LOAD.alt     gsCodSize
+		#emit SUB
+		#emit MOVE.alt
+		#emit LOAD.I
+		#emit STOR.S.pri   func
+		if (func)
+		{
+			// Probably a string.
+			return;
+		}
+		{}
+		// I'm relying on `alt` not changing here...
+		// Get the function at `func - COD + 16`.
+		#emit CONST.pri    E_INDIRECTION_OWNER_bytes
+		#emit ADD
+		#emit LOAD.S.alt   data
+		#emit XCHG
+		#emit STOR.I
+	}
+}
+#define Indirect_SetOwner(%0) Indirect_SetOwner_(_:%0)
+
+/*-------------------------------------------------------------------------*//**
+ * <library>indirection</library>
+ * <param name="func">The function pointer with attached metadata.</param>
+ * <remarks>
+ *   Gets extra data from the pointer.
+ * </remarks>
+ *//*------------------------------------------------------------------------**/
+
+stock Indirect_GetMeta_(func)
+{
+	if (func >= gsCodSize)
+	{
+		// Get the data at `func - COD`.
+		#emit LOAD.S.pri   func
+		#emit LOAD.alt     gsCodSize
+		#emit SUB
+		#emit MOVE.alt
+		#emit LOAD.I
+		#emit STOR.S.pri   func
+		if (func)
+		{
+			// Probably a string.
+			return 0;
+		}
+		{}
+		// I'm relying on `alt` not changing here...
+		// Get the function at `func - COD + 16`.
+		#emit CONST.pri    E_INDIRECTION_METADATA_bytes
+		#emit ADD
+		#emit LOAD.I
+		#emit RETN
+	}
+	return 0;
+}
+#define Indirect_GetMeta(%0) Indirect_GetMeta_(_:%0)
+
+/*-------------------------------------------------------------------------*//**
+ * <library>indirection</library>
+ * <param name="func">The function pointer to attach metadata to.</param>
+ * <param name="data">The metadata.</param>
+ *//*------------------------------------------------------------------------**/
+
+stock Indirect_SetMeta_(func, data)
+{
+	if (func >= gsCodSize)
+	{
+		// Get the data at `func - COD`.
+		#emit LOAD.S.pri   func
+		#emit LOAD.alt     gsCodSize
+		#emit SUB
+		#emit MOVE.alt
+		#emit LOAD.I
+		#emit STOR.S.pri   func
+		if (func)
+		{
+			// Probably a string.
+			return;
+		}
+		{}
+		// I'm relying on `alt` not changing here...
+		// Get the function at `func - COD + 16`.
+		#emit CONST.pri    E_INDIRECTION_METADATA_bytes
 		#emit ADD
 		#emit LOAD.S.alt   data
 		#emit XCHG
@@ -908,7 +1065,7 @@ stock Indirect_Claim_(func)
 		#emit POP.pri
 		#emit SCTRL        5
 		// Get the function at `func - COD + 8`.
-		#emit CONST.pri    8
+		#emit CONST.pri    E_INDIRECTION_CLAIM_bytes
 		#emit ADD
 		#emit LOAD.I
 		#emit SCTRL        6
@@ -931,7 +1088,6 @@ stock Indirect_Claim_(func)
 
 stock Indirect_Release_(func)
 {
-	const cells0 = 3 * cellbytes;
 	if (func >= gsCodSize)
 	{
 		// Get the data at `func - COD`.
@@ -955,7 +1111,7 @@ stock Indirect_Release_(func)
 		#emit POP.pri
 		#emit SCTRL        5
 		// Get the function at `func - COD + 12`.
-		#emit CONST.pri    cells0
+		#emit CONST.pri    E_INDIRECTION_RELEASE_cells
 		#emit ADD
 		#emit LOAD.I
 		#emit SCTRL        6
