@@ -151,22 +151,14 @@ stock
 
 // Constant offsets for assembly.
 const
-	E_INDIRECTION_ALWAYS_NULL_cells = _:E_INDIRECTION_ALWAYS_NULL,
-	E_INDIRECTION_HANDER_cells      = _:E_INDIRECTION_HANDER,
-	E_INDIRECTION_CLAIM_cells       = _:E_INDIRECTION_CLAIM,
-	E_INDIRECTION_RELEASE_cells     = _:E_INDIRECTION_RELEASE,
-	E_INDIRECTION_METADATA_cells    = _:E_INDIRECTION_METADATA,
-	E_INDIRECTION_TAG_cells         = _:E_INDIRECTION_TAG,
-	E_INDIRECTION_OWNER_cells       = _:E_INDIRECTION_OWNER,
-	E_INDIRECTION_cells             = _:E_INDIRECTION,
-	E_INDIRECTION_ALWAYS_NULL_bytes = _:E_INDIRECTION_ALWAYS_NULL * cellbytes,
-	E_INDIRECTION_HANDER_bytes      = _:E_INDIRECTION_HANDER * cellbytes,
-	E_INDIRECTION_CLAIM_bytes       = _:E_INDIRECTION_CLAIM * cellbytes,
-	E_INDIRECTION_RELEASE_bytes     = _:E_INDIRECTION_RELEASE * cellbytes,
-	E_INDIRECTION_METADATA_bytes    = _:E_INDIRECTION_METADATA * cellbytes,
-	E_INDIRECTION_TAG_bytes         = _:E_INDIRECTION_TAG * cellbytes,
-	E_INDIRECTION_OWNER_bytes       = _:E_INDIRECTION_OWNER * cellbytes,
-	E_INDIRECTION_bytes             = _:E_INDIRECTION * cellbytes;
+	E_INDIRECTION_ALWAYS_NULL__ = _:E_INDIRECTION_ALWAYS_NULL * cellbytes,
+	E_INDIRECTION_HANDER__      = _:E_INDIRECTION_HANDER * cellbytes,
+	E_INDIRECTION_CLAIM__       = _:E_INDIRECTION_CLAIM * cellbytes,
+	E_INDIRECTION_RELEASE__     = _:E_INDIRECTION_RELEASE * cellbytes,
+	E_INDIRECTION_METADATA__    = _:E_INDIRECTION_METADATA * cellbytes,
+	E_INDIRECTION_TAG__         = _:E_INDIRECTION_TAG * cellbytes,
+	E_INDIRECTION_OWNER__       = _:E_INDIRECTION_OWNER * cellbytes,
+	E_INDIRECTION__             = _:E_INDIRECTION * cellbytes;
 
 stock const
 	INDIRECTION_NAUGHT = 0;
@@ -398,7 +390,7 @@ stock Indirect_Call__(meta, GLOBAL_TAG_TYPES:...)
 		if (!INDIRECTION_DATA)
 		{
 			// Get the function at `func - COD + 4`.
-			#emit CONST.pri    E_INDIRECTION_HANDER_bytes
+			#emit CONST.pri    E_INDIRECTION_HANDER__
 			#emit ADD
 			#emit LOAD.I
 			// Call it, passing `func` as a proper pointer, NOT skipping `PROC`.
@@ -763,7 +755,7 @@ stock Indirect_Array(func, tag, const params[], size = sizeof (params))
 			#emit STOR.alt     INDIRECTION_DATA
 			// Get the function at `func - COD + 4`.
 			#emit LOAD.pri     INDIRECTION_DATA
-			#emit ADD.C        E_INDIRECTION_HANDER_bytes
+			#emit ADD.C        E_INDIRECTION_HANDER__
 			#emit LOAD.I
 			// Call it, passing `func` as a proper pointer, NOT skipping `PROC`.
 			#emit SCTRL        6
@@ -845,7 +837,7 @@ stock Indirect_GetTag_(func)
 		{}
 		// I'm relying on `alt` not changing here...
 		// Get the function at `func - COD + 16`.
-		#emit CONST.pri    E_INDIRECTION_TAG_bytes
+		#emit CONST.pri    E_INDIRECTION_TAG__
 		#emit ADD
 		#emit LOAD.I
 		#emit RETN
@@ -879,7 +871,7 @@ stock Indirect_SetTag_(func, data)
 		{}
 		// I'm relying on `alt` not changing here...
 		// Get the function at `func - COD + 16`.
-		#emit CONST.pri    E_INDIRECTION_TAG_bytes
+		#emit CONST.pri    E_INDIRECTION_TAG__
 		#emit ADD
 		#emit LOAD.S.alt   data
 		#emit XCHG
@@ -915,7 +907,7 @@ stock Indirect_GetOwner_(func)
 		{}
 		// I'm relying on `alt` not changing here...
 		// Get the function at `func - COD + 16`.
-		#emit CONST.pri    E_INDIRECTION_OWNER_bytes
+		#emit CONST.pri    E_INDIRECTION_OWNER__
 		#emit ADD
 		#emit LOAD.I
 		#emit RETN
@@ -949,7 +941,7 @@ stock Indirect_SetOwner_(func, data)
 		{}
 		// I'm relying on `alt` not changing here...
 		// Get the function at `func - COD + 16`.
-		#emit CONST.pri    E_INDIRECTION_OWNER_bytes
+		#emit CONST.pri    E_INDIRECTION_OWNER__
 		#emit ADD
 		#emit LOAD.S.alt   data
 		#emit XCHG
@@ -985,7 +977,7 @@ stock Indirect_GetMeta_(func)
 		{}
 		// I'm relying on `alt` not changing here...
 		// Get the function at `func - COD + 16`.
-		#emit CONST.pri    E_INDIRECTION_METADATA_bytes
+		#emit CONST.pri    E_INDIRECTION_METADATA__
 		#emit ADD
 		#emit LOAD.I
 		#emit RETN
@@ -1019,7 +1011,7 @@ stock Indirect_SetMeta_(func, data)
 		{}
 		// I'm relying on `alt` not changing here...
 		// Get the function at `func - COD + 16`.
-		#emit CONST.pri    E_INDIRECTION_METADATA_bytes
+		#emit CONST.pri    E_INDIRECTION_METADATA__
 		#emit ADD
 		#emit LOAD.S.alt   data
 		#emit XCHG
@@ -1065,7 +1057,7 @@ stock Indirect_Claim_(func)
 		#emit POP.pri
 		#emit SCTRL        5
 		// Get the function at `func - COD + 8`.
-		#emit CONST.pri    E_INDIRECTION_CLAIM_bytes
+		#emit CONST.pri    E_INDIRECTION_CLAIM__
 		#emit ADD
 		#emit LOAD.I
 		#emit SCTRL        6
@@ -1111,7 +1103,7 @@ stock Indirect_Release_(func)
 		#emit POP.pri
 		#emit SCTRL        5
 		// Get the function at `func - COD + 12`.
-		#emit CONST.pri    E_INDIRECTION_RELEASE_bytes
+		#emit CONST.pri    E_INDIRECTION_RELEASE__
 		#emit ADD
 		#emit LOAD.I
 		#emit SCTRL        6
