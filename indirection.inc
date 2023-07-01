@@ -1100,7 +1100,7 @@ stock Indirect_Release_(func)
 		#emit POP.pri
 		#emit SCTRL        5
 		// Get the function at `func - COD + 12`.
-		#emit CONST.pri    E_INDIRECTION_RELEASE_cells
+		#emit CONST.pri    E_INDIRECTION_RELEASE_bytes
 		#emit ADD
 		#emit LOAD.I
 		#emit SCTRL        6
