@@ -140,7 +140,8 @@ enum E_INDIRECTION
 	E_INDIRECTION_RELEASE,     // Called by `Indirect_Release`.
 	E_INDIRECTION_METADATA,    // Only used by end-users.
 	E_INDIRECTION_TAG,         // Save the encoded parameters tag of this callback.
-	E_INDIRECTION_OWNER        // Attach the function to players etc.
+	E_INDIRECTION_OWNER,       // Attach the function to players etc.
+	E_INDIRECTION_NEXT         // Next pointer in a generic list of callbacks.
 }
 
 stock
@@ -158,6 +159,7 @@ const
 	E_INDIRECTION_METADATA__    = _:E_INDIRECTION_METADATA * cellbytes,
 	E_INDIRECTION_TAG__         = _:E_INDIRECTION_TAG * cellbytes,
 	E_INDIRECTION_OWNER__       = _:E_INDIRECTION_OWNER * cellbytes,
+	E_INDIRECTION_NEXT__        = _:E_INDIRECTION_NEXT * cellbytes,
 	E_INDIRECTION__             = _:E_INDIRECTION * cellbytes;
 
 stock const
@@ -812,6 +814,76 @@ stock Indirect_Array(func, tag, const params[], size = sizeof (params))
 
 /*-------------------------------------------------------------------------*//**
  * <library>indirection</library>
+ * <param name="func">The function pointer with attached Nextdata.</param>
+ * <remarks>
+ *   Gets extra data from the pointer.
+ * </remarks>
+ *//*------------------------------------------------------------------------**/
+
+stock Indirect_GetNext_(func)
+{
+	if (func >= gsCodSize)
+	{
+		// Get the data at `func - COD`.
+		#emit LOAD.S.pri   func
+		#emit LOAD.alt     gsCodSize
+		#emit SUB
+		#emit MOVE.alt
+		#emit LOAD.I
+		#emit STOR.S.pri   func
+		if (func)
+		{
+			// Probably a string.
+			return 0;
+		}
+		{}
+		// I'm relying on `alt` not changing here...
+		// Get the function at `func - COD + 16`.
+		#emit CONST.pri    E_INDIRECTION_NEXT__
+		#emit ADD
+		#emit LOAD.I
+		#emit RETN
+	}
+	return 0;
+}
+#define Indirect_GetNext(%0) Indirect_GetNext_(_:%0)
+
+/*-------------------------------------------------------------------------*//**
+ * <library>indirection</library>
+ * <param name="func">The function pointer to attach Nextdata to.</param>
+ * <param name="data">The Nextdata.</param>
+ *//*------------------------------------------------------------------------**/
+
+stock Indirect_SetNext_(func, data)
+{
+	if (func >= gsCodSize)
+	{
+		// Get the data at `func - COD`.
+		#emit LOAD.S.pri   func
+		#emit LOAD.alt     gsCodSize
+		#emit SUB
+		#emit MOVE.alt
+		#emit LOAD.I
+		#emit STOR.S.pri   func
+		if (func)
+		{
+			// Probably a string.
+			return;
+		}
+		{}
+		// I'm relying on `alt` not changing here...
+		// Get the function at `func - COD + 16`.
+		#emit CONST.pri    E_INDIRECTION_NEXT__
+		#emit ADD
+		#emit LOAD.S.alt   data
+		#emit XCHG
+		#emit STOR.I
+	}
+}
+#define Indirect_SetNext(%0,%1) Indirect_SetNext_(_:(%0),%1)
+
+/*-------------------------------------------------------------------------*//**
+ * <library>indirection</library>
  * <param name="func">The function pointer with attached Tagdata.</param>
  * <remarks>
  *   Gets extra data from the pointer.
@@ -878,7 +950,7 @@ stock Indirect_SetTag_(func, data)
 		#emit STOR.I
 	}
 }
-#define Indirect_SetTag(%0) Indirect_SetTag_(_:%0)
+#define Indirect_SetTag(%0,%1) Indirect_SetTag_(_:(%0),%1)
 
 /*-------------------------------------------------------------------------*//**
  * <library>indirection</library>
@@ -948,7 +1020,7 @@ stock Indirect_SetOwner_(func, data)
 		#emit STOR.I
 	}
 }
-#define Indirect_SetOwner(%0) Indirect_SetOwner_(_:%0)
+#define Indirect_SetOwner(%0,%1) Indirect_SetOwner_(_:(%0),%1)
 
 /*-------------------------------------------------------------------------*//**
  * <library>indirection</library>
@@ -1018,7 +1090,7 @@ stock Indirect_SetMeta_(func, data)
 		#emit STOR.I
 	}
 }
-#define Indirect_SetMeta(%0) Indirect_SetMeta_(_:%0)
+#define Indirect_SetMeta(%0,%1) Indirect_SetMeta_(_:(%0),%1)
 
 /*-------------------------------------------------------------------------*//**
  * <library>indirection</library>
