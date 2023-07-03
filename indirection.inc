@@ -884,9 +884,9 @@ stock Indirect_SetNext_(func, data)
 
 /*-------------------------------------------------------------------------*//**
  * <library>indirection</library>
- * <param name="func">The function pointer with attached Tagdata.</param>
+ * <param name="func">The function pointer with a tag.</param>
  * <remarks>
- *   Gets extra data from the pointer.
+ *   Gets the tag of the pointer.
  * </remarks>
  *//*------------------------------------------------------------------------**/
 
@@ -920,11 +920,11 @@ stock Indirect_GetTag_(func)
 
 /*-------------------------------------------------------------------------*//**
  * <library>indirection</library>
- * <param name="func">The function pointer to attach Tagdata to.</param>
- * <param name="data">The Tagdata.</param>
+ * <param name="func">The function pointer to attach a tag to.</param>
+ * <param name="tag">The tag.</param>
  *//*------------------------------------------------------------------------**/
 
-stock Indirect_SetTag_(func, data)
+stock bool:Indirect_SetTag_(func, tag)
 {
 	if (func >= gsCodSize)
 	{
@@ -945,18 +945,20 @@ stock Indirect_SetTag_(func, data)
 		// Get the function at `func - COD + 16`.
 		#emit CONST.pri    E_INDIRECTION_TAG__
 		#emit ADD
-		#emit LOAD.S.alt   data
+		#emit LOAD.S.alt   tag
 		#emit XCHG
 		#emit STOR.I
+		return true;
 	}
+	return false;
 }
 #define Indirect_SetTag(%0,%1) Indirect_SetTag_(_:(%0),%1)
 
 /*-------------------------------------------------------------------------*//**
  * <library>indirection</library>
- * <param name="func">The function pointer with attached Ownerdata.</param>
+ * <param name="func">The function pointer with an owner.</param>
  * <remarks>
- *   Gets extra data from the pointer.
+ *   Gets the owner of the pointer.
  * </remarks>
  *//*------------------------------------------------------------------------**/
 
@@ -994,7 +996,13 @@ stock Indirect_GetOwner_(func)
  * <param name="data">The Ownerdata.</param>
  *//*------------------------------------------------------------------------**/
 
-stock Indirect_SetOwner_(func, data)
+/*-------------------------------------------------------------------------*//**
+ * <library>indirection</library>
+ * <param name="func">The function pointer to attach an owner to.</param>
+ * <param name="data">The owner.</param>
+ *//*------------------------------------------------------------------------**/
+
+stock Indirect_SetOwner_(func, owner)
 {
 	if (func >= gsCodSize)
 	{
@@ -1011,14 +1019,22 @@ stock Indirect_SetOwner_(func, data)
 			return;
 		}
 		{}
-		// I'm relying on `alt` not changing here...
-		// Get the function at `func - COD + 16`.
-		#emit CONST.pri    E_INDIRECTION_OWNER__
-		#emit ADD
-		#emit LOAD.S.alt   data
-		#emit XCHG
-		#emit STOR.I
+		#emit STOR.S.alt   func
+		if (ReadAmxMemory(func + E_INDIRECTION_NEXT__))
+		{
+			// Can't use this list pointer to save the owner.
+			return false;
+		}
+		// Store the owner.
+		WriteAmxMemory(func + E_INDIRECTION_OWNER__, owner),
+		// Change the claim pointer to our internal one, so we add it to the
+		// list if this is ever claimed.
+		owner = ReadAmxMemory(func + E_INDIRECTION_CLAIM__),
+		WriteAmxMemory(func + E_INDIRECTION_NEXT__, owner),
+		WriteAmxMemory(func + E_INDIRECTION_CLAIM__, _:addressof (Indirect_EBCClaim_));
+		return true;
 	}
+	return false;
 }
 #define Indirect_SetOwner(%0,%1) Indirect_SetOwner_(_:(%0),%1)
 
@@ -1088,7 +1104,9 @@ stock Indirect_SetMeta_(func, data)
 		#emit LOAD.S.alt   data
 		#emit XCHG
 		#emit STOR.I
+		return true;
 	}
+	return false;
 }
 #define Indirect_SetMeta(%0,%1) Indirect_SetMeta_(_:(%0),%1)
 
