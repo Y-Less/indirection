@@ -1249,6 +1249,7 @@ stock Indirect_Release_(func)
 		#emit STOR.I
 		#emit POP.pri
 		#emit SCTRL        6
+		// TODO: Unown.
 	}
 }
 #define Indirect_Release(%0) Indirect_Release_(_:%0)
