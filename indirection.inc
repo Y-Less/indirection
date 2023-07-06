@@ -1008,7 +1008,7 @@ stock Indirect_GetOwner_(func)
 static stock Indirect_EBCClaim_(func[E_INDIRECTION])
 {
 	// Reset the claim pointer.
-	func[E_INDIRECTION_CLAIM] = func[E_INDIRECTION_NEXT];
+	new tmp = func[E_INDIRECTION_NEXT];
 	// Add this callback to the list of known callbacks.
 	func[E_INDIRECTION_NEXT] = gsKnownOwnedCallbacks;
 	gsKnownOwnedCallbacks = ref(func[E_INDIRECTION_NEXT]);
@@ -1016,11 +1016,10 @@ static stock Indirect_EBCClaim_(func[E_INDIRECTION])
 	#emit LOAD.S.alt   func
 	// Reset the frame.
 	#emit POP.pri
+	#emit SWAP.pri
 	#emit SCTRL        5
 	// Perfect call forward.
-	#emit CONST.pri    E_INDIRECTION_CLAIM__
-	#emit ADD
-	#emit LOAD.I
+	#emit POP.pri
 	#emit SCTRL        6
 }
 
@@ -1162,22 +1161,35 @@ stock Indirect_Claim_(func)
 		#emit MOVE.alt
 		#emit LOAD.I
 		#emit STOR.S.pri   func
-		//#emit JZER.rel     4
-		//#emit RETN
 		if (func)
 		{
 			// Probably a string.
 			return;
 		}
 		{}
-		// I'm relying on `alt` not changing here...
+		// I'm relying on `alt` not changing here...  A LOT!
+		#emit CONST.pri    E_INDIRECTION_CLAIM__
+		#emit ADD
+		#emit LOAD.I
+		#emit STOR.S.pri   func
+		if (!func)
+		{
+			// Already claimed.
+			return;
+		}
+		{}
+		// Save the pointer to pass on.
+		#emit LOAD.S.pri   func
 		#emit STOR.S.alt   func
-		#emit POP.pri
+		#emit SWAP.pri
 		#emit SCTRL        5
 		// Get the function at `func - COD + 8`.
 		#emit CONST.pri    E_INDIRECTION_CLAIM__
 		#emit ADD
-		#emit LOAD.I
+		// Delete the old pointer - it has been claimed!
+		#emit ZERO.alt
+		#emit STOR.I
+		#emit POP.pri
 		#emit SCTRL        6
 	}
 }
@@ -1207,23 +1219,35 @@ stock Indirect_Release_(func)
 		#emit MOVE.alt
 		#emit LOAD.I
 		#emit STOR.S.pri   func
-		//#emit JZER.rel     4
-		//#emit RETN
 		if (func)
 		{
 			// Probably a string.
 			return;
 		}
 		{}
-		// I'm relying on `alt` not changing here.  I wouldn't need to if I
-		// could use jumps in assembly.
-		#emit STOR.S.alt   func
-		#emit POP.pri
-		#emit SCTRL        5
-		// Get the function at `func - COD + 12`.
+		// I'm relying on `alt` not changing here...  A LOT!
 		#emit CONST.pri    E_INDIRECTION_RELEASE__
 		#emit ADD
 		#emit LOAD.I
+		#emit STOR.S.pri   func
+		if (!func)
+		{
+			// Already claimed.
+			return;
+		}
+		{}
+		// Save the pointer to pass on.
+		#emit LOAD.S.pri   func
+		#emit STOR.S.alt   func
+		#emit SWAP.pri
+		#emit SCTRL        5
+		// Get the function at `func - COD + 8`.
+		#emit CONST.pri    E_INDIRECTION_RELEASE__
+		#emit ADD
+		// Delete the old pointer - it has been claimed!
+		#emit ZERO.alt
+		#emit STOR.I
+		#emit POP.pri
 		#emit SCTRL        6
 	}
 }
