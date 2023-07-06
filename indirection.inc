@@ -166,7 +166,9 @@ stock const
 	INDIRECTION_NAUGHT = 0;
 
 static stock
-	gsCodSize = 0; // The size of `COD`.
+	gsCodSize = 0, // The size of `COD`.
+	gsKnownOwnedCallbacks = 0,
+	gsFakeE_INDIRECTION[E_INDIRECTION];
 
 #if !defined YSI_MAX_STRING
 	#define YSI_MAX_STRING (144)
@@ -868,7 +870,7 @@ stock Indirect_SetNext_(func, data)
 		if (func)
 		{
 			// Probably a string.
-			return;
+			return false;
 		}
 		{}
 		// I'm relying on `alt` not changing here...
@@ -878,7 +880,9 @@ stock Indirect_SetNext_(func, data)
 		#emit LOAD.S.alt   data
 		#emit XCHG
 		#emit STOR.I
+		return true;
 	}
+	return false;
 }
 #define Indirect_SetNext(%0,%1) Indirect_SetNext_(_:(%0),%1)
 
@@ -938,7 +942,7 @@ stock bool:Indirect_SetTag_(func, tag)
 		if (func)
 		{
 			// Probably a string.
-			return;
+			return false;
 		}
 		{}
 		// I'm relying on `alt` not changing here...
@@ -992,9 +996,33 @@ stock Indirect_GetOwner_(func)
 
 /*-------------------------------------------------------------------------*//**
  * <library>indirection</library>
- * <param name="func">The function pointer to attach Ownerdata to.</param>
- * <param name="data">The Ownerdata.</param>
+ * <param name="func">The function pointer to claim with owner.</param>
+ * <remarks>
+ *   Replaces the default <c>CLAIM</c> function so this is called instead, then
+ *   forwards to the original.
+ * </remarks>
  *//*------------------------------------------------------------------------**/
+
+#define CALL@Indirect_EBCClaim_%8() Indirect_EBCClaim_%8(gsFakeE_INDIRECTION)
+
+static stock Indirect_EBCClaim_(func[E_INDIRECTION])
+{
+	// Reset the claim pointer.
+	func[E_INDIRECTION_CLAIM] = func[E_INDIRECTION_NEXT];
+	// Add this callback to the list of known callbacks.
+	func[E_INDIRECTION_NEXT] = gsKnownOwnedCallbacks;
+	gsKnownOwnedCallbacks = ref(func[E_INDIRECTION_NEXT]);
+	// Re-claim the function using the original pointer.
+	#emit LOAD.S.alt   func
+	// Reset the frame.
+	#emit POP.pri
+	#emit SCTRL        5
+	// Perfect call forward.
+	#emit CONST.pri    E_INDIRECTION_CLAIM__
+	#emit ADD
+	#emit LOAD.I
+	#emit SCTRL        6
+}
 
 /*-------------------------------------------------------------------------*//**
  * <library>indirection</library>
@@ -1016,7 +1044,7 @@ stock Indirect_SetOwner_(func, owner)
 		if (func)
 		{
 			// Probably a string.
-			return;
+			return false;
 		}
 		{}
 		#emit STOR.S.alt   func
@@ -1094,7 +1122,7 @@ stock Indirect_SetMeta_(func, data)
 		if (func)
 		{
 			// Probably a string.
-			return;
+			return false;
 		}
 		{}
 		// I'm relying on `alt` not changing here...
