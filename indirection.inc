@@ -202,7 +202,15 @@ static stock
 	#endif
 #endif
 
-#if !defined __PawnBuild
+#if defined __PawnBuild
+	// Because I somewhat scuppered myself!
+	#if __PawnBuild == 0
+		#define INDIRECTION_FUNC_INC__
+	#endif
+#else
+	#define INDIRECTION_FUNC_INC__
+#endif
+#if defined INDIRECTION_FUNC_INC__
 	forward __Indirect_FuncInc__();
 	
 	public __Indirect_FuncInc__()
@@ -212,6 +220,8 @@ static stock
 		funcidx
 			("");
 	}
+
+	#undef INDIRECTION_FUNC_INC__
 #endif
 
 TAGOF(Float);
