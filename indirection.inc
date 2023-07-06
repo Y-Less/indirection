@@ -206,6 +206,7 @@ static stock
 	// Because I somewhat scuppered myself!
 	#if __PawnBuild == 0
 		#define INDIRECTION_FUNC_INC__
+		#undef __PawnBuild
 	#endif
 #else
 	#define INDIRECTION_FUNC_INC__
