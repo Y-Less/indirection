@@ -1047,8 +1047,10 @@ stock Indirect_SetOwner_(func, owner)
 		}
 		{}
 		#emit STOR.S.alt   func
+		printf("check %d", func);
 		if (ReadAmxMemory(func + E_INDIRECTION_NEXT__))
 		{
+			printf("nope");
 			// Can't use this list pointer to save the owner.
 			return false;
 		}
@@ -1199,6 +1201,19 @@ stock Indirect_Claim_(func)
  * <library>indirection</library>
  * <param name="func">The function pointer you had previously stored.</param>
  * <remarks>
+ *   Removes a structure from the ownership list, if it was in one, and resets
+ *   the release pointer.
+ * </remarks>
+ *//*------------------------------------------------------------------------**/
+
+static stock Indirect_RemoveOwner(func)
+{
+}
+
+/*-------------------------------------------------------------------------*//**
+ * <library>indirection</library>
+ * <param name="func">The function pointer you had previously stored.</param>
+ * <remarks>
  *   If a function pointer is used within one function, that is not a problem.
  *   However, if you want to store the function pointer for use later, you must
  *   first "claim" it, so that any associated data is not cleared when the
@@ -1237,19 +1252,35 @@ stock Indirect_Release_(func)
 		}
 		{}
 		// Save the pointer to pass on.
-		#emit LOAD.S.pri   func
 		#emit STOR.S.alt   func
+		// Clean up owner lists.
+		new next = ReadAmxMemory(func + E_INDIRECTION_OWNER__);
+		if (next)
+		{
+			next = ref(gsKnownOwnedCallbacks);
+			new cur = ReadAmxMemory(next);
+			while (cur)
+			{
+				if (cur == func + E_INDIRECTION_NEXT__)
+				{
+					cur = ReadAmxMemory(cur);
+					WriteAmxMemory(next, cur);
+					WriteAmxMemory(func + E_INDIRECTION_NEXT__, 0);
+					WriteAmxMemory(func + E_INDIRECTION_OWNER__, 0);
+					break;
+				}
+				next = cur;
+				cur = ReadAmxMemory(next);
+			}
+		}
+		next = ReadAmxMemory(func + E_INDIRECTION_RELEASE__);
+		WriteAmxMemory(func + E_INDIRECTION_RELEASE__, 0);
+		// `next` is at the top of the stack with the code pointer.
+		#emit POP.pri
 		#emit SWAP.pri
 		#emit SCTRL        5
-		// Get the function at `func - COD + 8`.
-		#emit CONST.pri    E_INDIRECTION_RELEASE__
-		#emit ADD
-		// Delete the old pointer - it has been claimed!
-		#emit ZERO.alt
-		#emit STOR.I
 		#emit POP.pri
 		#emit SCTRL        6
-		// TODO: Unown.
 	}
 }
 #define Indirect_Release(%0) Indirect_Release_(_:%0)
