@@ -988,8 +988,8 @@ stock Indirect_GetOwner_(func)
 		#emit CONST.pri    E_INDIRECTION_OWNER__
 		#emit ADD
 		#emit LOAD.I
-		#emit CONST.alt    cellmin
-		#emit XOR
+		#emit CONST.alt    cellmax
+		#emit AND
 		#emit RETN
 	}
 	return 0;
