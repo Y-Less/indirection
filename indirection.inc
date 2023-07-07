@@ -1020,11 +1020,6 @@ stock Indirect_SetOwner_(func, owner)
 		}
 		{}
 		#emit STOR.S.alt   func
-		if (ReadAmxMemory(func + E_INDIRECTION_NEXT__))
-		{
-			// Can't use this list pointer to save the owner.
-			return false;
-		}
 		// Store the owner.
 		WriteAmxMemory(func + E_INDIRECTION_OWNER__, owner | cellmin);
 		return true;
