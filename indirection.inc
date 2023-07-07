@@ -1151,6 +1151,7 @@ stock Indirect_Claim_(func)
 			gsKnownOwnedCallbacks = func + E_INDIRECTION_NEXT__;
 		}
 		next = ReadAmxMemory(func + E_INDIRECTION_CLAIM__);
+		#pragma unused next // It is used, secretly in assembly...
 		WriteAmxMemory(func + E_INDIRECTION_CLAIM__, 0);
 		// `next` is at the top of the stack with the code pointer.
 		#emit POP.pri
@@ -1164,15 +1165,53 @@ stock Indirect_Claim_(func)
 
 /*-------------------------------------------------------------------------*//**
  * <library>indirection</library>
- * <param name="func">The function pointer you had previously stored.</param>
  * <remarks>
- *   Removes a structure from the ownership list, if it was in one, and resets
- *   the release pointer.
+ *   Null function that does nothing for when an owner is gone.
  * </remarks>
  *//*------------------------------------------------------------------------**/
 
-static stock Indirect_RemoveOwner(func)
+static stock Indirect_Stub(...)
 {
+	return 0;
+}
+
+#define CALL@Indirect_Stub%8() Indirect_Stub()
+
+/*-------------------------------------------------------------------------*//**
+ * <library>indirection</library>
+ * <param name="func">The function pointer you had previously stored.</param>
+ * <remarks>
+ *   Disables all callbacks belonging to this person.
+ * </remarks>
+ *//*------------------------------------------------------------------------**/
+
+stock Indirect_Disconnect(owner)
+{
+	// Special "owned" flag.
+	owner |= cellmin;
+	new
+		next = ref(gsKnownOwnedCallbacks),
+		cur = ReadAmxMemory(next);
+	while (cur)
+	{
+		if (ReadAmxMemory(cur - (E_INDIRECTION_NEXT__ - E_INDIRECTION_OWNER__)) == owner)
+		{
+			new tmp = _:addressof (Indirect_Stub);
+			// Disable the handler.
+			WriteAmxMemory(cur - (E_INDIRECTION_NEXT__ - E_INDIRECTION_HANDER__), tmp);
+			WriteAmxMemory(cur - (E_INDIRECTION_NEXT__ - E_INDIRECTION_OWNER__), 0);
+			// Remove from the list.
+			tmp = ReadAmxMemory(cur);
+			WriteAmxMemory(next, tmp);
+			WriteAmxMemory(cur, 0);
+			cur = tmp;
+		}
+		else
+		{
+			next = cur;
+			cur = ReadAmxMemory(next);
+		}
+	}
 }
 
 /*-------------------------------------------------------------------------*//**
@@ -1239,6 +1278,7 @@ stock Indirect_Release_(func)
 			}
 		}
 		next = ReadAmxMemory(func + E_INDIRECTION_RELEASE__);
+		#pragma unused next // It is used, secretly in assembly...
 		WriteAmxMemory(func + E_INDIRECTION_RELEASE__, 0);
 		// `next` is at the top of the stack with the code pointer.
 		#emit POP.pri
