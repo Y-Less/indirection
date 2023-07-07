@@ -988,40 +988,13 @@ stock Indirect_GetOwner_(func)
 		#emit CONST.pri    E_INDIRECTION_OWNER__
 		#emit ADD
 		#emit LOAD.I
+		#emit CONST.alt    cellmin
+		#emit XOR
 		#emit RETN
 	}
 	return 0;
 }
 #define Indirect_GetOwner(%0) Indirect_GetOwner_(_:%0)
-
-/*-------------------------------------------------------------------------*//**
- * <library>indirection</library>
- * <param name="func">The function pointer to claim with owner.</param>
- * <remarks>
- *   Replaces the default <c>CLAIM</c> function so this is called instead, then
- *   forwards to the original.
- * </remarks>
- *//*------------------------------------------------------------------------**/
-
-#define CALL@Indirect_EBCClaim_%8() Indirect_EBCClaim_%8(gsFakeE_INDIRECTION)
-
-static stock Indirect_EBCClaim_(func[E_INDIRECTION])
-{
-	// Reset the claim pointer.
-	new tmp = func[E_INDIRECTION_NEXT];
-	// Add this callback to the list of known callbacks.
-	func[E_INDIRECTION_NEXT] = gsKnownOwnedCallbacks;
-	gsKnownOwnedCallbacks = ref(func[E_INDIRECTION_NEXT]);
-	// Re-claim the function using the original pointer.
-	#emit LOAD.S.alt   func
-	// Reset the frame.
-	#emit POP.pri
-	#emit SWAP.pri
-	#emit SCTRL        5
-	// Perfect call forward.
-	#emit POP.pri
-	#emit SCTRL        6
-}
 
 /*-------------------------------------------------------------------------*//**
  * <library>indirection</library>
@@ -1047,20 +1020,13 @@ stock Indirect_SetOwner_(func, owner)
 		}
 		{}
 		#emit STOR.S.alt   func
-		printf("check %d", func);
 		if (ReadAmxMemory(func + E_INDIRECTION_NEXT__))
 		{
-			printf("nope");
 			// Can't use this list pointer to save the owner.
 			return false;
 		}
 		// Store the owner.
-		WriteAmxMemory(func + E_INDIRECTION_OWNER__, owner),
-		// Change the claim pointer to our internal one, so we add it to the
-		// list if this is ever claimed.
-		owner = ReadAmxMemory(func + E_INDIRECTION_CLAIM__),
-		WriteAmxMemory(func + E_INDIRECTION_NEXT__, owner),
-		WriteAmxMemory(func + E_INDIRECTION_CLAIM__, _:addressof (Indirect_EBCClaim_));
+		WriteAmxMemory(func + E_INDIRECTION_OWNER__, owner | cellmin);
 		return true;
 	}
 	return false;
@@ -1181,16 +1147,20 @@ stock Indirect_Claim_(func)
 		}
 		{}
 		// Save the pointer to pass on.
-		#emit LOAD.S.pri   func
 		#emit STOR.S.alt   func
+		// Clean up owner lists.
+		new next = ReadAmxMemory(func + E_INDIRECTION_OWNER__);
+		if (next)
+		{
+			WriteAmxMemory(func + E_INDIRECTION_NEXT__, gsKnownOwnedCallbacks);
+			gsKnownOwnedCallbacks = func + E_INDIRECTION_NEXT__;
+		}
+		next = ReadAmxMemory(func + E_INDIRECTION_CLAIM__);
+		WriteAmxMemory(func + E_INDIRECTION_CLAIM__, 0);
+		// `next` is at the top of the stack with the code pointer.
+		#emit POP.pri
 		#emit SWAP.pri
 		#emit SCTRL        5
-		// Get the function at `func - COD + 8`.
-		#emit CONST.pri    E_INDIRECTION_CLAIM__
-		#emit ADD
-		// Delete the old pointer - it has been claimed!
-		#emit ZERO.alt
-		#emit STOR.I
 		#emit POP.pri
 		#emit SCTRL        6
 	}
