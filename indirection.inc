@@ -1179,9 +1179,9 @@ static stock Indirect_Stub(...)
 
 /*-------------------------------------------------------------------------*//**
  * <library>indirection</library>
- * <param name="func">The function pointer you had previously stored.</param>
+ * <param name="owner">A person or other entity that no longer exists.</param>
  * <remarks>
- *   Disables all callbacks belonging to this person.
+ *   Disables all callbacks belonging to this entity.
  * </remarks>
  *//*------------------------------------------------------------------------**/
 
@@ -1190,29 +1190,75 @@ stock Indirect_Disconnect(owner)
 	// Special "owned" flag.
 	owner |= cellmin;
 	new
-		next = ref(gsKnownOwnedCallbacks),
-		cur = ReadAmxMemory(next);
+		prev = ref(gsKnownOwnedCallbacks),
+		cur = ReadAmxMemory(prev),
+		stub = _:addressof (Indirect_Stub);
 	while (cur)
 	{
 		if (ReadAmxMemory(cur - (E_INDIRECTION_NEXT__ - E_INDIRECTION_OWNER__)) == owner)
 		{
-			new tmp = _:addressof (Indirect_Stub);
 			// Disable the handler.
-			WriteAmxMemory(cur - (E_INDIRECTION_NEXT__ - E_INDIRECTION_HANDER__), tmp);
+			WriteAmxMemory(cur - (E_INDIRECTION_NEXT__ - E_INDIRECTION_HANDER__), stub);
 			WriteAmxMemory(cur - (E_INDIRECTION_NEXT__ - E_INDIRECTION_OWNER__), 0);
 			// Remove from the list.
-			tmp = ReadAmxMemory(cur);
-			WriteAmxMemory(next, tmp);
+			new
+				tmp = ReadAmxMemory(cur);
+			WriteAmxMemory(prev, tmp);
 			WriteAmxMemory(cur, 0);
 			cur = tmp;
 		}
 		else
 		{
-			next = cur;
-			cur = ReadAmxMemory(next);
+			prev = cur;
+			cur = ReadAmxMemory(prev);
 		}
 	}
 }
+
+/*-------------------------------------------------------------------------*//**
+ * <library>indirection</library>
+ *//*------------------------------------------------------------------------**/
+
+native Indirect_FuncIDX_(ptr) = funcidx;
+
+/*-------------------------------------------------------------------------*//**
+ * <library>indirection</library>
+ * <param name="func">The function pointer you had previously stored.</param>
+ * <remarks>
+ *   Is it still valid (exists and not disabled).
+ * </remarks>
+ *//*------------------------------------------------------------------------**/
+
+stock bool:Indirect_IsValid_(func)
+{
+	if (func >= gsCodSize)
+	{
+		// Get the data at `func - COD`.
+		#emit LOAD.S.pri   func
+		#emit LOAD.alt     gsCodSize
+		#emit SUB
+		#emit MOVE.alt
+		#emit LOAD.I
+		#emit STOR.S.pri   func
+		if (func)
+		{
+			// Strings must be valid.  I guess we could use `funcidx`...
+			// Extract the pointer back out of `alt`.
+			#emit STOR.S.alt   func
+			return Indirect_FuncIDX_(func) != -1;
+		}
+		{}
+		// I'm relying on `alt` not changing here...
+		#emit CONST.pri    E_INDIRECTION_HANDER__
+		#emit ADD
+		#emit LOAD.I
+		#emit STOR.S.pri   func
+		return func != _:addressof (Indirect_Stub);
+	}
+	// Direct pointers are always valid (because we can't tell otherwise).
+	return func != 0;
+}
+#define Indirect_IsValid(%0) Indirect_IsValid_(_:%0)
 
 /*-------------------------------------------------------------------------*//**
  * <library>indirection</library>
