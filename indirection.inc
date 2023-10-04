@@ -1179,6 +1179,19 @@ static stock Indirect_Stub(...)
 
 /*-------------------------------------------------------------------------*//**
  * <library>indirection</library>
+ * <remarks>
+ *   Hack to allow external access to this address, so that we can do some tests
+ *   more quickly in places.
+ * </remarks>
+ *//*------------------------------------------------------------------------**/
+
+stock Indirect_GetStubPointer()
+{
+	return _:addressof (Indirect_Stub);
+}
+
+/*-------------------------------------------------------------------------*//**
+ * <library>indirection</library>
  * <param name="owner">A person or other entity that no longer exists.</param>
  * <remarks>
  *   Disables all callbacks belonging to this entity.
