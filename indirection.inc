@@ -888,6 +888,37 @@ stock Indirect_SetNext_(func, data)
 
 /*-------------------------------------------------------------------------*//**
  * <library>indirection</library>
+ * <param name="func">The function pointer to attach Nextdata to.</param>
+ * <returns><c>1</c> - an indirection function.  <c>2</c> - a string name.
+ * <c>3</c> - a code pointer.
+ *//*------------------------------------------------------------------------**/
+
+stock Indirect_GetType_(func)
+{
+	if (func >= gsCodSize)
+	{
+		// Get the data at `func - COD`.
+		#emit LOAD.S.pri   func
+		#emit LOAD.alt     gsCodSize
+		#emit SUB
+		#emit MOVE.alt
+		#emit LOAD.I
+		#emit STOR.S.pri   func
+		if (func)
+		{
+			// String.
+			return 2;
+		}
+		// Indirect.
+		return 1;
+	}
+	// Pointer.
+	return 3;
+}
+#define Indirect_GetType(%0) Indirect_GetType_(_:(%0))
+
+/*-------------------------------------------------------------------------*//**
+ * <library>indirection</library>
  * <param name="func">The function pointer with a tag.</param>
  * <remarks>
  *   Gets the tag of the pointer.
