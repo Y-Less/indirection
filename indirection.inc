@@ -1259,50 +1259,50 @@ stock Indirect_Disconnect(owner)
 	}
 }
 
-/*-------------------------------------------------------------------------*//**
- * <library>indirection</library>
- * <param name="owner">A person or other entity that no longer exists.</param>
- * <param name="meta">Meta-data that needs matching.</param>
- * <remarks>
- *   This is a cheap way of adding two owners, To only disable all callbacks
- *   belonging to this entity with matching meta-data.
- * </remarks>
- *//*------------------------------------------------------------------------**/
-
-stock Indirect_Disconnect2(owner, meta)
-{
-	// Special "owned" flag.
-	owner |= cellmin;
-	new
-		prev = ref(gsKnownOwnedCallbacks),
-		cur = ReadAmxMemory(prev),
-		stub = _:addressof (Indirect_Stub);
-	while (cur)
-	{
-		if (
-			ReadAmxMemory(cur - (E_INDIRECTION_NEXT__ - E_INDIRECTION_METADATA__)) == meta &&
-			ReadAmxMemory(cur - (E_INDIRECTION_NEXT__ - E_INDIRECTION_OWNER__)) == owner
-			)
-		{
-			// Disable the handler.
-			WriteAmxMemory(cur - (E_INDIRECTION_NEXT__ - E_INDIRECTION_HANDER__), stub);
-			WriteAmxMemory(cur - (E_INDIRECTION_NEXT__ - E_INDIRECTION_OWNER__), 0);
-			// Remove from the list.
-			new
-				tmp = ReadAmxMemory(cur);
-			WriteAmxMemory(prev, tmp);
-			WriteAmxMemory(cur, 0);
-			cur = tmp;
-		}
-		else
-		{
-			prev = cur;
-			cur = ReadAmxMemory(prev);
-		}
-	}
-}
-
-#define Indirect_Disconnect(%0,%1) Indirect_Disconnect2(%0,%1)
+///*-------------------------------------------------------------------------*//**
+// * <library>indirection</library>
+// * <param name="owner">A person or other entity that no longer exists.</param>
+// * <param name="meta">Meta-data that needs matching.</param>
+// * <remarks>
+// *   This is a cheap way of adding two owners, To only disable all callbacks
+// *   belonging to this entity with matching meta-data.
+// * </remarks>
+// *//*------------------------------------------------------------------------**/
+//
+//stock Indirect_Disconnect2(owner, meta)
+//{
+//	// Special "owned" flag.
+//	owner |= cellmin;
+//	new
+//		prev = ref(gsKnownOwnedCallbacks),
+//		cur = ReadAmxMemory(prev),
+//		stub = _:addressof (Indirect_Stub);
+//	while (cur)
+//	{
+//		if (
+//			ReadAmxMemory(cur - (E_INDIRECTION_NEXT__ - E_INDIRECTION_METADATA__)) == meta &&
+//			ReadAmxMemory(cur - (E_INDIRECTION_NEXT__ - E_INDIRECTION_OWNER__)) == owner
+//			)
+//		{
+//			// Disable the handler.
+//			WriteAmxMemory(cur - (E_INDIRECTION_NEXT__ - E_INDIRECTION_HANDER__), stub);
+//			WriteAmxMemory(cur - (E_INDIRECTION_NEXT__ - E_INDIRECTION_OWNER__), 0);
+//			// Remove from the list.
+//			new
+//				tmp = ReadAmxMemory(cur);
+//			WriteAmxMemory(prev, tmp);
+//			WriteAmxMemory(cur, 0);
+//			cur = tmp;
+//		}
+//		else
+//		{
+//			prev = cur;
+//			cur = ReadAmxMemory(prev);
+//		}
+//	}
+//}
+//
+//#define Indirect_Disconnect(%0,%1) Indirect_Disconnect2(%0,%1)
 
 /*-------------------------------------------------------------------------*//**
  * <library>indirection</library>
