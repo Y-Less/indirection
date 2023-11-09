@@ -119,9 +119,11 @@ stock const
 	INDIRECTION_NAUGHT = 0;
 
 static stock
-	gsCodSize = 0, // The size of `COD`.
-	gsKnownOwnedCallbacks = 0,
-	gsFakeE_INDIRECTION[E_INDIRECTION];
+	INDR_gsAddr = 0,
+	INDR_gsTmp = 0,
+	INDR_gsTag[64],
+	INDR_gsCodSize = 0, // The size of `COD`.
+	INDR_gsKnownOwnedCallbacks = 0;
 
 #if !defined YSI_MAX_STRING
 	#define YSI_MAX_STRING (144)
@@ -252,12 +254,12 @@ stock Indirect_Meta(GLOBAL_TAG_TYPES:...)
 	// Offset to the first parameter.
 	const cells0 = 3 * cellbytes;
 	const cells1 = 2 * cellbytes;
-	new addr;
+	new meta;
 	#emit ADDR.pri     cells0
-	#emit STOR.S.pri   addr
+	#emit STOR.S.pri   meta
 	#emit LOAD.S.pri   cells1
 	#emit STOR.pri     INDIRECTION_COUNT
-	Indirect_Memcpy(INDIRECTION_META, addr, 0, INDIRECTION_COUNT, INDIRECTION_META_DATA_SIZE);
+	Indirect_Memcpy(INDIRECTION_META, meta, 0, INDIRECTION_COUNT, INDIRECTION_META_DATA_SIZE);
 	return (INDIRECTION_COUNT /= cellbytes);
 }
 
@@ -304,8 +306,6 @@ stock Indirect_Call__(meta, GLOBAL_TAG_TYPES:...)
 	const cells1 = -1 * cellbytes;
 	const cells3 = 1 * cellbytes;
 	const cells4 = 2 * cellbytes;
-	static
-		addr = 0;
 	#pragma unused meta
 	if (!INDIRECTION_DATA)
 	{
@@ -318,7 +318,7 @@ stock Indirect_Call__(meta, GLOBAL_TAG_TYPES:...)
 	// Get the previous frame.  This undoes the effects of our `PROC` so the
 	// called function must have a proper `PROC`.
 	#emit ADDR.pri     cells0
-	#emit STOR.pri     addr
+	#emit STOR.pri     INDR_gsAddr
 	#emit POP.pri
 	#emit SCTRL        5
 	// Get the return address.
@@ -335,11 +335,11 @@ stock Indirect_Call__(meta, GLOBAL_TAG_TYPES:...)
 	// Check the pointer type.  If it is in the `COD` area, jump straight to it
 	// with the tag for parameter types (if it isn't 0).  Otherwise, use the
 	// `func` from `DAT` as a pointer to a handler.
-	if (INDIRECTION_DATA >= gsCodSize)
+	if (INDIRECTION_DATA >= INDR_gsCodSize)
 	{
 		// Get the data at `func - COD`.
 		#emit LOAD.pri     INDIRECTION_DATA
-		#emit LOAD.alt     gsCodSize
+		#emit LOAD.alt     INDR_gsCodSize
 		#emit SUB
 		#emit MOVE.alt
 		#emit LOAD.I
@@ -370,30 +370,51 @@ stock Indirect_Call__(meta, GLOBAL_TAG_TYPES:...)
 		}
 		{}
 		// Get the address from the index.
-		INDIRECTION_DATA = GetPublicAddressFromIndex(INDIRECTION_DATA);
+		#if cellbits == 64
+			const shifter = 3;
+		#else
+			const shifter = 2;
+		#endif
+		#emit LCTRL        __dat
+		#emit NEG
+		#emit ADD.C        32 // Always this, regardless of cell size.
+		#emit STOR.pri     INDR_gsTmp
+		#emit LREF.alt     INDR_gsTmp
+		#emit LCTRL        __dat
+		#emit NEG
+		#emit ADD
+		// This replicates `IDXADDR`, but in no more instructions since the data
+		// are in the wrong registers.
+		#emit LOAD.alt     INDIRECTION_DATA
+		#emit SHL.C.alt    shifter
+		#emit ADD
+		// Add more data, to account for `__defsize` offsets.
+		#emit LOAD.alt     INDIRECTION_DATA
+		#emit SHL.C.alt    2
+		#emit ADD
+		#emit STOR.pri     INDR_gsTmp
+		#emit LREF.pri     INDR_gsTmp
+		#emit STOR.pri     INDIRECTION_DATA
 	}
 	if (INDIRECTION_TAG)
 	{
-		static
-			i = 0,
-			lTag[64];
 		// Skip the `F@_@` prefix.
-		GetTagNameFromID(INDIRECTION_TAG, lTag);
-		if (lTag[0]) for (i = 4; ; )
+		GetTagNameFromID(INDIRECTION_TAG, INDR_gsTag);
+		if (INDR_gsTag[0]) for (INDR_gsTmp = 4; ; )
 		{
-			switch (lTag[i++])
+			switch (INDR_gsTag[INDR_gsTmp++])
 			{
 			case 'i', 'd', 't', 'f', 'c':
 			{
 				// Resolve non-reference parameters.
-				#emit LREF.pri   addr
+				#emit LREF.pri   INDR_gsAddr
 				#emit LOAD.I
-				#emit SREF.pri   addr
+				#emit SREF.pri   INDR_gsAddr
 			}
 			case '\0', 'x':
 				break;
 			}
-			addr += cellbytes;
+			INDR_gsAddr += cellbytes;
 		}
 	}
 	{}
@@ -416,8 +437,6 @@ stock string:Indirect_Callstring(func, tag, GLOBAL_TAG_TYPES:...)
 	const cells4 = 1 * cellbytes;
 	const cells5 = 1 * cellbytes;
 	const cells6 = 2 * cellbytes;
-	static
-		addr = 0;
 	#pragma unused tag
 	if (!func)
 	{
@@ -435,7 +454,7 @@ stock string:Indirect_Callstring(func, tag, GLOBAL_TAG_TYPES:...)
 	}
 	{}
 	#emit ADDR.pri     cells2
-	#emit STOR.pri     addr
+	#emit STOR.pri     INDR_gsAddr
 	#emit POP.pri
 	#emit SCTRL        5
 	// Get the return address.
@@ -455,11 +474,11 @@ stock string:Indirect_Callstring(func, tag, GLOBAL_TAG_TYPES:...)
 	// Check the pointer type.  If it is in the `COD` area, jump straight to it
 	// with the tag for parameter types (if it isn't 0).  Otherwise, use the
 	// `func` from `DAT` as a pointer to a handler.
-	if (INDIRECTION_DATA >= gsCodSize)
+	if (INDIRECTION_DATA >= INDR_gsCodSize)
 	{
 		// Get the data at `func - COD`.
 		#emit LOAD.pri     INDIRECTION_DATA
-		#emit LOAD.alt     gsCodSize
+		#emit LOAD.alt     INDR_gsCodSize
 		#emit SUB
 		#emit MOVE.alt
 		#emit LOAD.I
@@ -490,30 +509,51 @@ stock string:Indirect_Callstring(func, tag, GLOBAL_TAG_TYPES:...)
 		}
 		{}
 		// Get the address from the index.
-		INDIRECTION_DATA = GetPublicAddressFromIndex(INDIRECTION_DATA);
+		#if cellbits == 64
+			const shifter = 3;
+		#else
+			const shifter = 2;
+		#endif
+		#emit LCTRL        __dat
+		#emit NEG
+		#emit ADD.C        32 // Always this, regardless of cell size.
+		#emit STOR.pri     INDR_gsTmp
+		#emit LREF.alt     INDR_gsTmp
+		#emit LCTRL        __dat
+		#emit NEG
+		#emit ADD
+		// This replicates `IDXADDR`, but in no more instructions since the data
+		// are in the wrong registers.
+		#emit LOAD.alt     INDIRECTION_DATA
+		#emit SHL.C.alt    shifter
+		#emit ADD
+		// Add more data, to account for `__defsize` offsets.
+		#emit LOAD.alt     INDIRECTION_DATA
+		#emit SHL.C.alt    2
+		#emit ADD
+		#emit STOR.pri     INDR_gsTmp
+		#emit LREF.pri     INDR_gsTmp
+		#emit STOR.pri     INDIRECTION_DATA
 	}
 	if (INDIRECTION_TAG)
 	{
-		static
-			i = 0,
-			lTag[64];
 		// Skip the `F@_@` prefix.
-		GetTagNameFromID(INDIRECTION_TAG, lTag);
-		if (lTag[0]) for (i = 4; ; )
+		GetTagNameFromID(INDIRECTION_TAG, INDR_gsTag);
+		if (INDR_gsTag[0]) for (INDR_gsTmp = 4; ; )
 		{
-			switch (lTag[i++])
+			switch (INDR_gsTag[INDR_gsTmp++])
 			{
 			case 'i', 'd', 't', 'f', 'c':
 			{
 				// Resolve non-reference parameters.
-				#emit LREF.pri   addr
+				#emit LREF.pri   INDR_gsAddr
 				#emit LOAD.I
-				#emit SREF.pri   addr
+				#emit SREF.pri   INDR_gsAddr
 			}
 			case '\0', 'x':
 				break;
 			}
-			addr += cellbytes;
+			INDR_gsAddr += cellbytes;
 		}
 	}
 	{}
@@ -538,8 +578,6 @@ stock void:Indirect_Callvoid(func, tag, GLOBAL_TAG_TYPES:...)
 	const cells2 = 1 * cellbytes;
 	const cells3 = 1 * cellbytes;
 	const cells4 = 2 * cellbytes;
-	static
-		addr = 0;
 	#pragma unused tag
 	if (!func)
 	{
@@ -547,7 +585,7 @@ stock void:Indirect_Callvoid(func, tag, GLOBAL_TAG_TYPES:...)
 	}
 	{}
 	#emit ADDR.pri     cells0
-	#emit STOR.pri     addr
+	#emit STOR.pri     INDR_gsAddr
 	#emit POP.pri
 	#emit SCTRL        5
 	// Get the return address.
@@ -567,11 +605,11 @@ stock void:Indirect_Callvoid(func, tag, GLOBAL_TAG_TYPES:...)
 	// Check the pointer type.  If it is in the `COD` area, jump straight to it
 	// with the tag for parameter types (if it isn't 0).  Otherwise, use the
 	// `func` from `DAT` as a pointer to a handler.
-	if (INDIRECTION_DATA >= gsCodSize)
+	if (INDIRECTION_DATA >= INDR_gsCodSize)
 	{
 		// Get the data at `func - COD`.
 		#emit LOAD.pri     INDIRECTION_DATA
-		#emit LOAD.alt     gsCodSize
+		#emit LOAD.alt     INDR_gsCodSize
 		#emit SUB
 		#emit MOVE.alt
 		#emit LOAD.I
@@ -602,30 +640,51 @@ stock void:Indirect_Callvoid(func, tag, GLOBAL_TAG_TYPES:...)
 		}
 		{}
 		// Get the address from the index.
-		INDIRECTION_DATA = GetPublicAddressFromIndex(INDIRECTION_DATA);
+		#if cellbits == 64
+			const shifter = 3;
+		#else
+			const shifter = 2;
+		#endif
+		#emit LCTRL        __dat
+		#emit NEG
+		#emit ADD.C        32 // Always this, regardless of cell size.
+		#emit STOR.pri     INDR_gsTmp
+		#emit LREF.alt     INDR_gsTmp
+		#emit LCTRL        __dat
+		#emit NEG
+		#emit ADD
+		// This replicates `IDXADDR`, but in no more instructions since the data
+		// are in the wrong registers.
+		#emit LOAD.alt     INDIRECTION_DATA
+		#emit SHL.C.alt    shifter
+		#emit ADD
+		// Add more data, to account for `__defsize` offsets.
+		#emit LOAD.alt     INDIRECTION_DATA
+		#emit SHL.C.alt    2
+		#emit ADD
+		#emit STOR.pri     INDR_gsTmp
+		#emit LREF.pri     INDR_gsTmp
+		#emit STOR.pri     INDIRECTION_DATA
 	}
 	if (INDIRECTION_TAG)
 	{
-		static
-			i = 0,
-			lTag[64];
 		// Skip the `F@_@` prefix.
-		GetTagNameFromID(INDIRECTION_TAG, lTag);
-		if (lTag[0]) for (i = 4; ; )
+		GetTagNameFromID(INDIRECTION_TAG, INDR_gsTag);
+		if (INDR_gsTag[0]) for (INDR_gsTmp = 4; ; )
 		{
-			switch (lTag[i++])
+			switch (INDR_gsTag[INDR_gsTmp++])
 			{
 			case 'i', 'd', 't', 'f', 'c':
 			{
 				// Resolve non-reference parameters.
-				#emit LREF.pri   addr
+				#emit LREF.pri   INDR_gsAddr
 				#emit LOAD.I
-				#emit SREF.pri   addr
+				#emit SREF.pri   INDR_gsAddr
 			}
 			case '\0', 'x':
 				break;
 			}
-			addr += cellbytes;
+			INDR_gsAddr += cellbytes;
 		}
 	}
 	{}
@@ -698,11 +757,11 @@ stock Indirect_Array(func, tag, const params[], size = sizeof (params))
 	// Check the pointer type.  If it is in the `COD` area, jump straight to it
 	// with the tag for parameter types (if it isn't 0).  Otherwise, use the
 	// `func` from `DAT` as a pointer to a handler.
-	if (INDIRECTION_DATA >= gsCodSize)
+	if (INDIRECTION_DATA >= INDR_gsCodSize)
 	{
 		// Get the data at `func - COD`.
 		#emit LOAD.pri     INDIRECTION_DATA
-		#emit LOAD.alt     gsCodSize
+		#emit LOAD.alt     INDR_gsCodSize
 		#emit SUB
 		#emit MOVE.alt
 		#emit LOAD.I
@@ -734,18 +793,39 @@ stock Indirect_Array(func, tag, const params[], size = sizeof (params))
 		}
 		{}
 		// Get the address from the index.
-		INDIRECTION_DATA = GetPublicAddressFromIndex(INDIRECTION_DATA);
+		#if cellbits == 64
+			const shifter = 3;
+		#else
+			const shifter = 2;
+		#endif
+		#emit LCTRL        __dat
+		#emit NEG
+		#emit ADD.C        32 // Always this, regardless of cell size.
+		#emit STOR.pri     INDR_gsTmp
+		#emit LREF.alt     INDR_gsTmp
+		#emit LCTRL        __dat
+		#emit NEG
+		#emit ADD
+		// This replicates `IDXADDR`, but in no more instructions since the data
+		// are in the wrong registers.
+		#emit LOAD.alt     INDIRECTION_DATA
+		#emit SHL.C.alt    shifter
+		#emit ADD
+		// Add more data, to account for `__defsize` offsets.
+		#emit LOAD.alt     INDIRECTION_DATA
+		#emit SHL.C.alt    2
+		#emit ADD
+		#emit STOR.pri     INDR_gsTmp
+		#emit LREF.pri     INDR_gsTmp
+		#emit STOR.pri     INDIRECTION_DATA
 	}
 	if (INDIRECTION_TAG)
 	{
-		static
-			i = 0,
-			lTag[64];
 		// Skip the `F@_@` prefix.
-		GetTagNameFromID(INDIRECTION_TAG, lTag);
-		if (lTag[0]) for (i = 4; ; )
+		GetTagNameFromID(INDIRECTION_TAG, INDR_gsTag);
+		if (INDR_gsTag[0]) for (INDR_gsTmp = 4; ; )
 		{
-			switch (lTag[i++])
+			switch (INDR_gsTag[INDR_gsTmp++])
 			{
 			case 'i', 'd', 't', 'f', 'c':
 			{
@@ -777,11 +857,11 @@ stock Indirect_Array(func, tag, const params[], size = sizeof (params))
 
 stock Indirect_GetNext_(func)
 {
-	if (func >= gsCodSize)
+	if (func >= INDR_gsCodSize)
 	{
 		// Get the data at `func - COD`.
 		#emit LOAD.S.pri   func
-		#emit LOAD.alt     gsCodSize
+		#emit LOAD.alt     INDR_gsCodSize
 		#emit SUB
 		#emit MOVE.alt
 		#emit LOAD.I
@@ -811,11 +891,11 @@ stock Indirect_GetNext_(func)
 
 stock Indirect_SetNext_(func, data)
 {
-	if (func >= gsCodSize)
+	if (func >= INDR_gsCodSize)
 	{
 		// Get the data at `func - COD`.
 		#emit LOAD.S.pri   func
-		#emit LOAD.alt     gsCodSize
+		#emit LOAD.alt     INDR_gsCodSize
 		#emit SUB
 		#emit MOVE.alt
 		#emit LOAD.I
@@ -848,11 +928,11 @@ stock Indirect_SetNext_(func, data)
 
 stock Indirect_GetType_(func)
 {
-	if (func >= gsCodSize)
+	if (func >= INDR_gsCodSize)
 	{
 		// Get the data at `func - COD`.
 		#emit LOAD.S.pri   func
-		#emit LOAD.alt     gsCodSize
+		#emit LOAD.alt     INDR_gsCodSize
 		#emit SUB
 		#emit MOVE.alt
 		#emit LOAD.I
@@ -880,11 +960,11 @@ stock Indirect_GetType_(func)
 
 stock Indirect_GetTag_(func)
 {
-	if (func >= gsCodSize)
+	if (func >= INDR_gsCodSize)
 	{
 		// Get the data at `func - COD`.
 		#emit LOAD.S.pri   func
-		#emit LOAD.alt     gsCodSize
+		#emit LOAD.alt     INDR_gsCodSize
 		#emit SUB
 		#emit MOVE.alt
 		#emit LOAD.I
@@ -914,11 +994,11 @@ stock Indirect_GetTag_(func)
 
 stock bool:Indirect_SetTag_(func, tag)
 {
-	if (func >= gsCodSize)
+	if (func >= INDR_gsCodSize)
 	{
 		// Get the data at `func - COD`.
 		#emit LOAD.S.pri   func
-		#emit LOAD.alt     gsCodSize
+		#emit LOAD.alt     INDR_gsCodSize
 		#emit SUB
 		#emit MOVE.alt
 		#emit LOAD.I
@@ -952,11 +1032,11 @@ stock bool:Indirect_SetTag_(func, tag)
 
 stock Indirect_GetOwner_(func)
 {
-	if (func >= gsCodSize)
+	if (func >= INDR_gsCodSize)
 	{
 		// Get the data at `func - COD`.
 		#emit LOAD.S.pri   func
-		#emit LOAD.alt     gsCodSize
+		#emit LOAD.alt     INDR_gsCodSize
 		#emit SUB
 		#emit MOVE.alt
 		#emit LOAD.I
@@ -988,11 +1068,11 @@ stock Indirect_GetOwner_(func)
 
 stock Indirect_SetOwner_(func, owner)
 {
-	if (func >= gsCodSize)
+	if (func >= INDR_gsCodSize)
 	{
 		// Get the data at `func - COD`.
 		#emit LOAD.S.pri   func
-		#emit LOAD.alt     gsCodSize
+		#emit LOAD.alt     INDR_gsCodSize
 		#emit SUB
 		#emit MOVE.alt
 		#emit LOAD.I
@@ -1022,11 +1102,11 @@ stock Indirect_SetOwner_(func, owner)
 
 stock Indirect_GetMeta_(func)
 {
-	if (func >= gsCodSize)
+	if (func >= INDR_gsCodSize)
 	{
 		// Get the data at `func - COD`.
 		#emit LOAD.S.pri   func
-		#emit LOAD.alt     gsCodSize
+		#emit LOAD.alt     INDR_gsCodSize
 		#emit SUB
 		#emit MOVE.alt
 		#emit LOAD.I
@@ -1056,11 +1136,11 @@ stock Indirect_GetMeta_(func)
 
 stock Indirect_SetMeta_(func, data)
 {
-	if (func >= gsCodSize)
+	if (func >= INDR_gsCodSize)
 	{
 		// Get the data at `func - COD`.
 		#emit LOAD.S.pri   func
-		#emit LOAD.alt     gsCodSize
+		#emit LOAD.alt     INDR_gsCodSize
 		#emit SUB
 		#emit MOVE.alt
 		#emit LOAD.I
@@ -1099,11 +1179,11 @@ stock Indirect_SetMeta_(func, data)
 
 stock Indirect_Claim_(func)
 {
-	if (func >= gsCodSize)
+	if (func >= INDR_gsCodSize)
 	{
 		// Get the data at `func - COD`.
 		#emit LOAD.S.pri   func
-		#emit LOAD.alt     gsCodSize
+		#emit LOAD.alt     INDR_gsCodSize
 		#emit SUB
 		#emit MOVE.alt
 		#emit LOAD.I
@@ -1131,8 +1211,8 @@ stock Indirect_Claim_(func)
 		new next = ReadAmxMemory(func + E_INDIRECTION_OWNER__);
 		if (next)
 		{
-			WriteAmxMemory(func + E_INDIRECTION_NEXT__, gsKnownOwnedCallbacks);
-			gsKnownOwnedCallbacks = func + E_INDIRECTION_NEXT__;
+			WriteAmxMemory(func + E_INDIRECTION_NEXT__, INDR_gsKnownOwnedCallbacks);
+			INDR_gsKnownOwnedCallbacks = func + E_INDIRECTION_NEXT__;
 		}
 		next = ReadAmxMemory(func + E_INDIRECTION_CLAIM__);
 		#pragma unused next // It is used, secretly in assembly...
@@ -1169,19 +1249,19 @@ static stock Indirect_Stub(...)
 
 stock Indirect_GetStubPointer()
 {
-	static addr = 0;
-	if (!addr)
+	static stub = 0;
+	if (!stub)
 	{
-		if (addr)
+		if (stub)
 		{
 			// Include in the output.  Can't be called.
 			Indirect_Stub();
 		}
 		{}
 		#emit CONST.pri    Indirect_Stub
-		#emit STOR.S.pri   addr
+		#emit STOR.S.pri   stub
 	}
-	return addr;
+	return stub;
 }
 
 /*-------------------------------------------------------------------------*//**
@@ -1197,7 +1277,7 @@ stock Indirect_Disconnect(owner)
 	// Special "owned" flag.
 	owner |= cellmin;
 	new
-		prev = ref(gsKnownOwnedCallbacks),
+		prev = ref(INDR_gsKnownOwnedCallbacks),
 		cur = ReadAmxMemory(prev),
 		stub = Indirect_GetStubPointer();
 	while (cur)
@@ -1205,14 +1285,13 @@ stock Indirect_Disconnect(owner)
 		if (ReadAmxMemory(cur - (E_INDIRECTION_NEXT__ - E_INDIRECTION_OWNER__)) == owner)
 		{
 			// Disable the handler.
-			WriteAmxMemory(cur - (E_INDIRECTION_NEXT__ - E_INDIRECTION_HANDER__), stub);
-			WriteAmxMemory(cur - (E_INDIRECTION_NEXT__ - E_INDIRECTION_OWNER__), 0);
+			WriteAmxMemory(cur - (E_INDIRECTION_NEXT__ - E_INDIRECTION_HANDER__), stub),
+			WriteAmxMemory(cur - (E_INDIRECTION_NEXT__ - E_INDIRECTION_OWNER__), 0),
 			// Remove from the list.
-			new
-				tmp = ReadAmxMemory(cur);
-			WriteAmxMemory(prev, tmp);
-			WriteAmxMemory(cur, 0);
-			cur = tmp;
+			INDR_gsTmp = ReadAmxMemory(cur),
+			WriteAmxMemory(prev, INDR_gsTmp),
+			WriteAmxMemory(cur, 0),
+			cur = INDR_gsTmp;
 		}
 		else
 		{
@@ -1237,7 +1316,7 @@ stock Indirect_Disconnect(owner)
 //	// Special "owned" flag.
 //	owner |= cellmin;
 //	new
-//		prev = ref(gsKnownOwnedCallbacks),
+//		prev = ref(INDR_gsKnownOwnedCallbacks),
 //		cur = ReadAmxMemory(prev),
 //		stub = Indirect_GetStubPointer();
 //	while (cur)
@@ -1248,14 +1327,13 @@ stock Indirect_Disconnect(owner)
 //			)
 //		{
 //			// Disable the handler.
-//			WriteAmxMemory(cur - (E_INDIRECTION_NEXT__ - E_INDIRECTION_HANDER__), stub);
-//			WriteAmxMemory(cur - (E_INDIRECTION_NEXT__ - E_INDIRECTION_OWNER__), 0);
+//			WriteAmxMemory(cur - (E_INDIRECTION_NEXT__ - E_INDIRECTION_HANDER__), stub),
+//			WriteAmxMemory(cur - (E_INDIRECTION_NEXT__ - E_INDIRECTION_OWNER__), 0),
 //			// Remove from the list.
-//			new
-//				tmp = ReadAmxMemory(cur);
-//			WriteAmxMemory(prev, tmp);
-//			WriteAmxMemory(cur, 0);
-//			cur = tmp;
+//			INDR_gsTmp = ReadAmxMemory(cur),
+//			WriteAmxMemory(prev, INDR_gsTmp),
+//			WriteAmxMemory(cur, 0),
+//			cur = INDR_gsTmp;
 //		}
 //		else
 //		{
@@ -1283,11 +1361,11 @@ native Indirect_FuncIDX_(ptr) = funcidx;
 
 stock bool:Indirect_IsValid_(func)
 {
-	if (func >= gsCodSize)
+	if (func >= INDR_gsCodSize)
 	{
 		// Get the data at `func - COD`.
 		#emit LOAD.S.pri   func
-		#emit LOAD.alt     gsCodSize
+		#emit LOAD.alt     INDR_gsCodSize
 		#emit SUB
 		#emit MOVE.alt
 		#emit LOAD.I
@@ -1327,11 +1405,11 @@ stock bool:Indirect_IsValid_(func)
 
 stock Indirect_Release_(func)
 {
-	if (func >= gsCodSize)
+	if (func >= INDR_gsCodSize)
 	{
 		// Get the data at `func - COD`.
 		#emit LOAD.S.pri   func
-		#emit LOAD.alt     gsCodSize
+		#emit LOAD.alt     INDR_gsCodSize
 		#emit SUB
 		#emit MOVE.alt
 		#emit LOAD.I
@@ -1359,7 +1437,7 @@ stock Indirect_Release_(func)
 		new next = ReadAmxMemory(func + E_INDIRECTION_OWNER__);
 		if (next)
 		{
-			next = ref(gsKnownOwnedCallbacks);
+			next = ref(INDR_gsKnownOwnedCallbacks);
 			new cur = ReadAmxMemory(next);
 			while (cur)
 			{
@@ -1401,12 +1479,10 @@ stock Indirect_Release_(func)
 
 stock Indirect_Tag(id, dest[32])
 {
-	static
-		lTag[64];
-	GetTagNameFromID(id, lTag),
+	GetTagNameFromID(id, INDR_gsTag),
 	dest[0] = '\0';
-	if (lTag[0])
-		strcat(dest, lTag[4]);
+	if (INDR_gsTag[0])
+		strcat(dest, INDR_gsTag[4]);
 }
 
 /*-------------------------------------------------------------------------*//**
@@ -1424,7 +1500,7 @@ stock Indirect_Ref_(...)
 	const cells0 = 3 * cellbytes;
 	assert(numargs() == 1);
 	#emit LOAD.S.pri       cells0
-	#emit LOAD.alt         gsCodSize
+	#emit LOAD.alt         INDR_gsCodSize
 	#emit ADD
 	#emit RETN
 	return 0;
@@ -1447,7 +1523,7 @@ stock Indirect_Ptr_(ptr)
 	#pragma unused ptr
 	assert(numargs() == 1);
 	#emit LOAD.S.pri       cells0
-	#emit LOAD.alt         gsCodSize
+	#emit LOAD.alt         INDR_gsCodSize
 	#emit ADD
 	#emit RETN
 	return 0;
@@ -1469,7 +1545,7 @@ stock Indirect_DeRef_(...)
 	const cells0 = 3 * cellbytes;
 	assert(numargs() == 1);
 	#emit LOAD.S.pri       cells0
-	#emit LOAD.alt         gsCodSize
+	#emit LOAD.alt         INDR_gsCodSize
 	#emit SUB
 	#emit RETN
 	return 0;
@@ -1489,7 +1565,7 @@ stock Indirect_DeRef_(...)
 stock Indirect_DePtr_(ptr)
 {
 	#emit LOAD.S.pri       ptr
-	#emit LOAD.alt         gsCodSize
+	#emit LOAD.alt         INDR_gsCodSize
 	#emit SUB
 	#emit RETN
 	return 0;
@@ -1642,13 +1718,13 @@ stock bool:Indirect_GetMetaString(index, dest[], size = sizeof (dest))
 
 Indirect_Init()
 {
-	if (!gsCodSize)
+	if (!INDR_gsCodSize)
 	{
 		#emit LCTRL        __cod
 		#emit MOVE.alt
 		#emit LCTRL        __dat
 		#emit SUB
-		#emit STOR.pri     gsCodSize
+		#emit STOR.pri     INDR_gsCodSize
 	}
 }
  
