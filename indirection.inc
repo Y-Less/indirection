@@ -47,53 +47,6 @@
 
 /// <p/>
 
-#if !defined ADDRESSOF_INC
-	#tryinclude "..\amx\addressof"
-#endif
-#if !defined ADDRESSOF_INC
-	#tryinclude <amx_assembly\addressof>
-#endif
-#if !defined ADDRESSOF_INC
-	#tryinclude "..\amx_assembly\addressof"
-#endif
-#if !defined ADDRESSOF_INC
-	#tryinclude "..\..\amx_assembly\addressof"
-#endif
-#if !defined ADDRESSOF_INC
-	#tryinclude "addressof"
-#endif
-#if !defined ADDRESSOF_INC
-	#tryinclude <addressof>
-#endif
-#if !defined ADDRESSOF_INC
-	#define AMX_INCLUDING_FAILED
-#endif
-#if !defined _ADDR@
-	#define AMX_INCLUDING_FAILED
-#endif
-
-#if !defined ADDRESSOF_JIT_INC
-	#tryinclude "..\amx\addressof_jit"
-#endif
-#if !defined ADDRESSOF_JIT_INC
-	#tryinclude <amx_assembly\addressof_jit>
-#endif
-#if !defined ADDRESSOF_JIT_INC
-	#tryinclude "..\amx_assembly\addressof_jit"
-#endif
-#if !defined ADDRESSOF_JIT_INC
-	#tryinclude "..\..\amx_assembly\addressof_jit"
-#endif
-#if !defined ADDRESSOF_JIT_INC
-	#tryinclude "addressof_jit"
-#endif
-#if !defined ADDRESSOF_JIT_INC
-	#tryinclude <addressof_jit>
-#endif
-#if !defined ADDRESSOF_JIT_INC
-	#define AMX_INCLUDING_FAILED
-#endif
-
 #if !defined AMX_HEADER_INC
 	#tryinclude "..\amx\amx_header"
 #endif
@@ -118,8 +71,8 @@
 
 #if defined AMX_INCLUDING_FAILED
 	#error Could not include "https://github.com/Zeex/amx_assembly" - ensure its files are in "include\amx_assembly\"
-#elseif !defined AddressofResolve
-	#error Please update "https://github.com/Zeex/amx_assembly" to the latest version.
+//#elseif !defined AddressofResolve
+//	#error Please update "https://github.com/Zeex/amx_assembly" to the latest version.
 #endif
 
 #if defined CUSTOM_TAG_TYPES
@@ -1206,8 +1159,6 @@ static stock Indirect_Stub(...)
 	return 0;
 }
 
-#define CALL@Indirect_Stub%8() Indirect_Stub()
-
 /*-------------------------------------------------------------------------*//**
  * <library>indirection</library>
  * <remarks>
@@ -1218,7 +1169,19 @@ static stock Indirect_Stub(...)
 
 stock Indirect_GetStubPointer()
 {
-	return _:addressof (Indirect_Stub);
+	static addr = 0;
+	if (!addr)
+	{
+		if (addr)
+		{
+			// Include in the output.  Can't be called.
+			Indirect_Stub();
+		}
+		{}
+		#emit CONST.pri    Indirect_Stub
+		#emit STOR.S.pri   addr
+	}
+	return addr;
 }
 
 /*-------------------------------------------------------------------------*//**
@@ -1236,7 +1199,7 @@ stock Indirect_Disconnect(owner)
 	new
 		prev = ref(gsKnownOwnedCallbacks),
 		cur = ReadAmxMemory(prev),
-		stub = _:addressof (Indirect_Stub);
+		stub = Indirect_GetStubPointer();
 	while (cur)
 	{
 		if (ReadAmxMemory(cur - (E_INDIRECTION_NEXT__ - E_INDIRECTION_OWNER__)) == owner)
@@ -1276,7 +1239,7 @@ stock Indirect_Disconnect(owner)
 //	new
 //		prev = ref(gsKnownOwnedCallbacks),
 //		cur = ReadAmxMemory(prev),
-//		stub = _:addressof (Indirect_Stub);
+//		stub = Indirect_GetStubPointer();
 //	while (cur)
 //	{
 //		if (
@@ -1342,7 +1305,7 @@ stock bool:Indirect_IsValid_(func)
 		#emit ADD
 		#emit LOAD.I
 		#emit STOR.S.pri   func
-		return func != _:addressof (Indirect_Stub);
+		return func != Indirect_GetStubPointer();
 	}
 	// Direct pointers are always valid (because we can't tell otherwise).
 	return func != 0;
@@ -1681,11 +1644,11 @@ Indirect_Init()
 {
 	if (!gsCodSize)
 	{
-		AddressofResolve();
-		new
-			amxhdr[AMX_HDR];
-		GetAmxHeader(amxhdr);
-		gsCodSize = amxhdr[AMX_HDR_DAT] - amxhdr[AMX_HDR_COD];
+		#emit LCTRL        __cod
+		#emit MOVE.alt
+		#emit LCTRL        __dat
+		#emit SUB
+		#emit STOR.pri     gsCodSize
 	}
 }
  
@@ -1749,5 +1712,4 @@ public OnGameModeInit()
 	#define _ALS_OnGameModeInit
 #endif
 #define OnGameModeInit(%0) Indirection_OnGameModeInit(%0)
-
 
