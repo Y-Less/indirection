@@ -1259,7 +1259,7 @@ stock Indirect_GetStubPointer()
 		}
 		{}
 		#emit CONST.pri    Indirect_Stub
-		#emit STOR.S.pri   stub
+		#emit STOR.pri     stub
 	}
 	return stub;
 }
